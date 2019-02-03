@@ -1,5 +1,4 @@
 #Maze Generator -- INTRO TO AI 198:520 -- Rutgers University -- M.Shachnai
-
 from tkinter import *
 from tkinter import ttk
 import random
@@ -13,6 +12,7 @@ class Cell:
 
 #function to generate maze - takes in dimension of maze, probability of blocked
 #cell, and 2d array
+#def maze_gen(dim, prob, maze):
 def maze_gen(dim, prob, maze):
     random.seed()
 
@@ -55,6 +55,9 @@ def maze_gen(dim, prob, maze):
     root.mainloop()
     return;
 
+def updatePosition():
+    return
+
 ####### this will be in main function of program  ######
 #take in user input of maze dimension and blocked cell probability
 dim = int(input("Enter dimension: "))
@@ -63,7 +66,6 @@ prob = float(input("Enter probability: "))
 #initialize list which forms basis for 2d maze
 maze = []
 maze_gen(dim, prob, maze)
-
 
 
 
