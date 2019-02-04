@@ -59,6 +59,8 @@ def maze_visual(dim, maze):
     root.mainloop()
     return
 
+def updatePosition(): 
+    return
 
 def main():
 
@@ -79,8 +81,9 @@ def main():
 
     #generate maze visual
     maze_visual(dim, maze)
+   
+    #print algorithm stats
 
-    #print(maze[dim-1][dim-1].val)
     return
 
 main()
