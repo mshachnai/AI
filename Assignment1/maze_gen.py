@@ -1,4 +1,6 @@
 #Maze Generator -- INTRO TO AI 198:520 -- Rutgers University -- M.Shachnai
+import DFS 
+import BFS 
 from tkinter import *
 from tkinter import ttk
 import random
@@ -76,6 +78,8 @@ def main():
 
     #run search algorithm
     ####insert here####
+    mylist = DFS.DFS(2, [[0,1], [0,0]])
+    print(mylist) 
     #if there is a path - show it with maze_visual
     #otherwise print("no solution")
 
