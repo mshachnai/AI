@@ -1,6 +1,6 @@
 #Maze Generator -- INTRO TO AI 198:520 -- Rutgers University -- M.Shachnai
-import DFS 
-import BFS 
+import DFS as dfs 
+import BFS as bfs 
 from tkinter import *
 from tkinter import ttk
 import random
@@ -32,15 +32,16 @@ def maze_gen(dim, prob, maze):
                 #print(maze[i][j].coord)     #coordinates of open cells cells
     return
 
-#function to generate a visual of the maze and its solution
+#function to generate a visual of the maze and its solution if given
 ######need to work on showing actual path taken
-def maze_visual(dim, maze):
+def maze_visual(dim, maze, sol = []):
 
     #initialize visual window and create maze layout using buttons
     root = Tk()
 
     for r in range(dim): #width of maze
         for c in range(dim): #height of maze
+            #print(r,c, sol[c-1])
 
             #top left cell of maze will be named 'S' - start
             if r == 0 and c == 0 :  
@@ -54,9 +55,15 @@ def maze_visual(dim, maze):
             elif maze[r][c].val == 1:
                 button3 = Button(root, relief = SOLID, borderwidth = 1, bg = "black", width = 1).grid(row=r,column=c)
                         
+            #mark path on the maze visual by checking the cell coordinate is
+            #listed in the solution array, if it is - mark the specific cell
+            elif (r,c) in sol:
+                button4 = Button(root, relief = SOLID, borderwidth = 1, bg =
+                        "yellow", width = 1).grid(row=r,column=c)
+                        
             #for all other cases, create white cells
             else:
-                button4 = Button(root, relief = SOLID, borderwidth = 1, bg = "white", width = 1).grid(row=r,column=c)
+                button5 = Button(root, relief = SOLID, borderwidth = 1, bg = "white", width = 1).grid(row=r,column=c)
 
     root.mainloop()
     return
@@ -67,27 +74,29 @@ def updatePosition():
 def main():
 
     #take in user input of maze dimension and blocked cell probability
-    dim = int(input("Enter dimension: "))
+    dim = int(input("Enter maze dimension: "))
     prob = float(input("Enter probability: "))
 
-    #initialize list which forms basis for 2d maze
+    #1)initialize list which forms basis for 2d maze
     maze = []
 
-    #run maze generator
+    #2)run maze generator
     maze_gen(dim, prob, maze)
 
-    #run search algorithm
+    #3)run search algorithm
     ####insert here####
-    mylist = DFS.DFS(2, [[0,1], [0,0]])
-    print(mylist) 
+    mylist = dfs.DFS(2, [[0,1], [0,0]])
     #if there is a path - show it with maze_visual
     #otherwise print("no solution")
 
-    #generate maze visual
-    maze_visual(dim, maze)
+    #4)generate maze visual
    
-    #print algorithm stats
+    #5)print algorithm stats with graph
 
+
+
+    ###this is an example of the maze visual at work###
+    #maze_visual(dim, maze, [(0,1), (0,2), (1,2), (2,2), (3,2), (4,2), (4,3), (4,4)])
     return
 
 main()
