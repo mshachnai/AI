@@ -1,9 +1,12 @@
 #Maze Generator -- INTRO TO AI 198:520 -- Rutgers University -- M.Shachnai
 import DFS as dfs 
-import BFS as bfs 
+import BFS as bfs
+import AStarEuclidean as astare
+import AStarManhattan as astarm
 from tkinter import *
 from tkinter import ttk
 import random
+import copy
 
 #maze generator will be formed using a 2d array of struct named cell
 class Cell:
@@ -85,7 +88,12 @@ def main():
 
     #3)run search algorithm
     ####insert here####
-    mylist = dfs.DFS(2, [[0,1], [0,0]])
+    m1 = copy.deepcopy(maze)
+    res = astare.AStarE(dim, m1)
+    #print(res)
+    m2 = copy.deepcopy(maze)
+    res = astarm.AStarM(dim, m2)
+    #print(res)
     #if there is a path - show it with maze_visual
     #otherwise print("no solution")
 

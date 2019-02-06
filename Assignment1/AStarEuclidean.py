@@ -8,13 +8,13 @@ class Node():
         self.dist = dist #this is the distance already traveled
 
 
-def AStar(size, maze):
+def AStarE(size, maze):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
     Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
 
-    if maze[0][0] == 1:
+    if maze[0][0].val == 1:
         return None
 
     #need to store distance traveled to prioritize nodes
@@ -42,7 +42,7 @@ def AStar(size, maze):
 
         # check right
         if col < size - 1:
-            if (maze[row][col + 1] == 0):
+            if (maze[row][col + 1].val == 0):
                 # create a new node
                 rightNode = Node((row, col + 1), [], node, dist + 1)
                 # add node by priority
@@ -51,34 +51,34 @@ def AStar(size, maze):
                 # add new node to current node's children
                 node.children.append(rightNode)
                 # mark the child node as "visited"
-                maze[row][col + 1] = 2
+                maze[row][col + 1].val = 2
 
         # check down
         if row < size - 1:
-            if (maze[row + 1][col] == 0):
+            if (maze[row + 1][col].val == 0):
                 downNode = Node((row + 1, col), [], node, dist + 1)
                 estDist = estTotalDist(dist + 1, row + 1, col, size)
                 queue = insertNodeByPriority(queue, downNode, estDist, size)
                 node.children.append(downNode)
-                maze[row + 1][col] = 2
+                maze[row + 1][col].val = 2
 
         # check up
         if row > 0:
-            if (maze[row - 1][col] == 0):
+            if (maze[row - 1][col].val == 0):
                 upNode = Node((row - 1, col), [], node, dist + 1)
                 estDist = estTotalDist(dist + 1, row - 1, col, size)
                 queue = insertNodeByPriority(queue, upNode, estDist, size)
                 node.children.append(upNode)
-                maze[row - 1][col] = 2
+                maze[row - 1][col].val = 2
 
         # check left
         if col > 0:
-            if (maze[row][col - 1] == 0):
+            if (maze[row][col - 1].val == 0):
                 leftNode = Node((row, col - 1), [], node, dist + 1)
                 estDist = estTotalDist(dist + 1, row, col - 1, size)
                 queue = insertNodeByPriority(queue, leftNode, estDist, size)
                 node.children.append(leftNode)
-                maze[row][col - 1] = 2
+                maze[row][col - 1].val = 2
 
 
 def estTotalDist(dist, row, col, size):
@@ -106,9 +106,3 @@ def insertNodeByPriority(queue, newNode, estDist, size):
 
 if __name__ == "__main__":
     print(estTotalDist(4, 4, 0, 5))
-    res = AStar(5, [[0,1,0,0,0],
-        [0,1,0,1,0],
-        [0,1,0,1,0],
-        [0,1,0,1,0],
-        [0,0,0,0,0]])
-    print(res)
