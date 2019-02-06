@@ -33,7 +33,7 @@ def DFS(size, maze):
     #why do we need the size? the input just needs to be the map and we can do len(map) and len(map[0])
 
     #edge case: checking if the starting cell is somehow not empty
-    if maze[0][0] == 1:
+    if maze[0][0].val == 1:
         return None
 
     root = Node((0,0), [], None)
@@ -59,7 +59,7 @@ def DFS(size, maze):
         
         #check right
         if col < size-1:
-            if(maze[row][col+1] == 0):
+            if(maze[row][col+1].val == 0):
                 #create a new node
                 rightNode = Node((row,col+1), [], node)
                 #enqueue
@@ -67,35 +67,35 @@ def DFS(size, maze):
                 #add new node to current node's children
                 node.children.append(rightNode)
                 #mark the child node as "visited"
-                maze[row][col+1] = 2
+                maze[row][col+1].val = 2
 
         #check down
         if row < size -1:
-            if(maze[row+1][col] == 0):
+            if(maze[row+1][col].val == 0):
                 downNode = Node((row+1, col), [], node)
                 fringe.push(downNode)
                 node.children.append(downNode)
-                maze[row+1][col] = 2
+                maze[row+1][col].val = 2
 
         #check up
         if row > 0:
-            if(maze[row-1][col] == 0): 
+            if(maze[row-1][col].val == 0):
                 upNode = Node((row-1, col), [], node)
                 fringe.push(upNode)
                 node.children.append(upNode)
-                maze[row-1][col] = 2
+                maze[row-1][col].val = 2
 
         #check left
         if col > 0: 
-            if(maze[row][col-1] == 0):
+            if(maze[row][col-1].val == 0):
                 leftNode = Node((row, col-1), [], node)
                 fringe.push(leftNode)
                 node.children.append(leftNode)
-                maze[row][col-1] = 2
+                maze[row][col-1].val = 2
 
 
 if __name__ == "__main__":
-    myList = DFS(1, [[1]])
+    myList = DFS(0,0)
     print(myList)
 
 

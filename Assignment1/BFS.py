@@ -9,13 +9,8 @@ def BFS(size, maze):
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
     Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
-    
-    #FOR TESTING, DELETE LATER
-    maze = [[1]]
-    size = 1
-    #END TESTING
 
-    if maze[0][0] == 1:
+    if maze[0][0].val == 1:
         return None
 
     root = Node((0,0), [], None)
@@ -41,7 +36,7 @@ def BFS(size, maze):
         
         #check right
         if col < size-1:
-            if(maze[row][col+1] == 0):
+            if(maze[row][col+1].val == 0):
                 #create a new node
                 rightNode = Node((row,col+1), [], node)
                 #enqueue
@@ -49,36 +44,35 @@ def BFS(size, maze):
                 #add new node to current node's children
                 node.children.append(rightNode)
                 #mark the child node as "visited"
-                maze[row][col+1] = 2
+                maze[row][col+1].val = 2
 
         #check down
         if row < size -1:
-            if(maze[row+1][col] == 0):
+            if(maze[row+1][col].val == 0):
                 downNode = Node((row+1, col), [], node)
                 queue.append(downNode)
                 node.children.append(downNode)
-                maze[row+1][col] = 2
+                maze[row+1][col].val = 2
 
         #check up
         if row > 0:
-            if(maze[row-1][col] == 0): 
+            if(maze[row-1][col].val == 0):
                 upNode = Node((row-1, col), [], node)
                 queue.append(upNode)
                 node.children.append(upNode)
-                maze[row-1][col] = 2
+                maze[row-1][col].val = 2
 
         #check left
         if col > 0: 
-            if(maze[row][col-1] == 0):
+            if(maze[row][col-1].val == 0):
                 leftNode = Node((row, col-1), [], node)
                 queue.append(leftNode)
                 node.children.append(leftNode)
-                maze[row][col-1] = 2
+                maze[row][col-1].val = 2
 
 
 if __name__ == "__main__":
     myList = BFS(0,0)
     print(myList)
-    print("xD")
 
 

@@ -90,10 +90,16 @@ def main():
     ####insert here####
     m1 = copy.deepcopy(maze)
     res = astare.AStarE(dim, m1)
-    #print(res)
+    print(res)
     m2 = copy.deepcopy(maze)
     res = astarm.AStarM(dim, m2)
-    #print(res)
+    print(res)
+    m3 = copy.deepcopy(maze)
+    res = bfs.BFS(dim, m3)
+    print(res)
+    m4 = copy.deepcopy(maze)
+    res = dfs.DFS(dim, m4)
+    print(res)
     #if there is a path - show it with maze_visual
     #otherwise print("no solution")
 
