@@ -87,27 +87,24 @@ def main():
     maze_gen(dim, prob, maze)
 
     #3)run search algorithm
-    ####insert here####
     m1 = copy.deepcopy(maze)
     res = astare.AStarE(dim, m1)
-    print(res)
+    #print(res)
     m2 = copy.deepcopy(maze)
     res = astarm.AStarM(dim, m2)
-    print(res)
+    #print(res)
     m3 = copy.deepcopy(maze)
     res = bfs.BFS(dim, m3)
-    print(res)
+    #print(res)
     m4 = copy.deepcopy(maze)
     res = dfs.DFS(dim, m4)
-    print(res)
+    #print(res)
     #if there is a path - show it with maze_visual
     #otherwise print("no solution")
 
     #4)generate maze visual
    
     #5)print algorithm stats with graph
-
-
 
     ###this is an example of the maze visual at work###
     #maze_visual(dim, maze, [(0,1), (0,2), (1,2), (2,2), (3,2), (4,2), (4,3), (4,4)])
