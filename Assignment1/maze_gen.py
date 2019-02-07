@@ -41,6 +41,7 @@ def maze_visual(dim, maze, sol = []):
 
     #initialize visual window and create maze layout using buttons
     root = Tk()
+    root.title('Maze Runner')
 
     for r in range(dim): #width of maze
         for c in range(dim): #height of maze
@@ -52,21 +53,20 @@ def maze_visual(dim, maze, sol = []):
 
             #bottom right cell of maze will be named 'G' - goal
             elif r == dim-1 and c == dim-1 :  
-                button2 = Button(root, text = "G", relief = SOLID, borderwidth = 1, bg = "light blue", width = 1 ).grid(row=r,column=c)
+                button2 = Button(root, text = "G", command = root.destroy, relief = SOLID, borderwidth = 1, bg = "light blue", width = 1 ).grid(row=r,column=c)
 
             #if cell value == 1, this is a blocked cell
             elif maze[r][c].val == 1:
-                button3 = Button(root, relief = SOLID, borderwidth = 1, bg = "black", width = 1).grid(row=r,column=c)
+                button3 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, bg = "black", width = 1).grid(row=r,column=c)
                         
             #mark path on the maze visual by checking the cell coordinate is
             #listed in the solution array, if it is - mark the specific cell
             elif (r,c) in sol:
-                button4 = Button(root, relief = SOLID, borderwidth = 1, bg =
-                        "yellow", width = 1).grid(row=r,column=c)
+                button4 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, bg = "yellow", width = 1).grid(row=r,column=c)
                         
             #for all other cases, create white cells
             else:
-                button5 = Button(root, relief = SOLID, borderwidth = 1, bg = "white", width = 1).grid(row=r,column=c)
+                button5 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, bg = "white", width = 1).grid(row=r,column=c)
 
     root.mainloop()
     return
@@ -83,27 +83,43 @@ def main():
     #1)initialize list which forms basis for 2d maze
     maze = []
 
-    #2)run maze generator
+    #2)run maze generator 
     maze_gen(dim, prob, maze)
 
-    #3)run search algorithm
-    res = astare.AStarE(dim, maze)
-    #print(res)
-    res = astarm.AStarM(dim, maze)
-    #print(res)
-    res = bfs.BFS(dim, maze)
-    #print(res)
-    res = dfs.DFS(dim, maze)
-    #print(res)
+    #3)run search algorithm and generate maze visual
     #if there is a path - show it with maze_visual
-    #otherwise print("no solution")
+    #otherwise print("No path")
+    print("A* Euclidean")
+    res = astare.AStarE(dim, maze)
+    if res is None : 
+        print("No path")
+    else : 
+        maze_visual(dim, maze, res)
 
-    #4)generate maze visual
-   
-    #5)print algorithm stats with graph
+    print("A* Manhattan")
+    res = astarm.AStarM(dim, maze)
+    if res is None : 
+        print("No path")
+    else : 
+        maze_visual(dim, maze, res)
 
-    ###this is an example of the maze visual at work###
-    #maze_visual(dim, maze, [(0,1), (0,2), (1,2), (2,2), (3,2), (4,2), (4,3), (4,4)])
+    print("BFS")
+    res = bfs.BFS(dim, maze)
+    if res is None : 
+        print("No path")
+    else : 
+        maze_visual(dim, maze, res)
+
+    print("DFS")
+    res = dfs.DFS(dim, maze)
+    if res is None : 
+        print("No path")
+    else : 
+        maze_visual(dim, maze, res)
+
+    #4)print algorithm stats with graph
+
     return
+
 
 main()
