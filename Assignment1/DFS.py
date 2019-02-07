@@ -1,3 +1,5 @@
+import copy
+
 class Node():
     def __init__(self, data, children, parent):
         self.data = data # this is a tuple
@@ -24,7 +26,7 @@ class Stack:
          return len(self.items)
 
 
-def DFS(size, maze):
+def DFS(size, maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
     Edit: I'll have to change this to incorporate class Cell later
@@ -32,6 +34,8 @@ def DFS(size, maze):
 
     #why do we need the size? the input just needs to be the map and we can do len(map) and len(map[0])
 
+    #make a deep copy of maze to use it without changing original values
+    maze = copy.deepcopy(maze1)
     #edge case: checking if the starting cell is somehow not empty
     if maze[0][0].val == 1:
         return None

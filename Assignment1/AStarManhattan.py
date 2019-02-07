@@ -1,3 +1,5 @@
+import copy
+
 class Node():
     def __init__(self, data, children, parent, dist):
         self.data = data # this is a tuple
@@ -6,12 +8,14 @@ class Node():
         self.dist = dist #this is the distance already traveled
 
 
-def AStarM(size, maze):
+def AStarM(size, maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
     Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
 
+    #make a deep copy of maze to use it without changing original values
+    maze = copy.deepcopy(maze1)
     if maze[0][0].val == 1:
         return None
 
