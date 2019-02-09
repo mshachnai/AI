@@ -86,7 +86,7 @@ def main():
     #if there is a path - show it with maze_visual
     #otherwise print("No path")
     print("A* Euclidean")
-    res = AStarE(dim, maze)
+    res = AStarE(maze)
     if res is None : 
         print("No path")
     else : 
@@ -94,21 +94,21 @@ def main():
         print(res[1])
 
     print("A* Manhattan")
-    res = AStarM(dim, maze)
+    res = AStarM(maze)
     if res is None : 
         print("No path")
     else : 
         maze_visual(dim, maze, res[0])
         print(res[1])
     print("BFS")
-    res = BFS(dim, maze)
+    res = BFS(maze)
     if res is None : 
         print("No path")
     else : 
         maze_visual(dim, maze, res[0])
         print(res[1])
     print("DFS")
-    res = DFS(dim, maze)
+    res = DFS(maze)
     if res is None : 
         print("No path")
     else : 

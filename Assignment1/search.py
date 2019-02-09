@@ -31,11 +31,13 @@ class Stack:
 
 
    
-def BFS(size, maze1):
+def BFS(maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
     Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
+
+    size = len(maze1)
 
     #make a deep copy of maze to use it without changing original values
     maze = copy.deepcopy(maze1)
@@ -113,12 +115,13 @@ def BFS(size, maze1):
                 maxNodes+=1
 
 
-def DFS(size, maze1):
+def DFS(maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
     Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
 
+    size  = len(maze1)
 
     #make a deep copy of maze to use it without changing original values
     maze = copy.deepcopy(maze1)
@@ -194,11 +197,13 @@ def DFS(size, maze1):
                 maze[row+1][col].val = 2
                 maxNodes+=1
 
-def AStarM(size, maze1):
+def AStarM(maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
     Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
+
+    size = len(maze1)
 
     #make a deep copy of maze to use it without changing original values
     maze = copy.deepcopy(maze1)
@@ -285,11 +290,13 @@ def estTotalDistM(dist, row, col, size):
     return dist + size-1-row + size-1-col
 
 
-def AStarE(size, maze1):
+def AStarE(maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
     Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
+
+    size = len(maze1)
 
     #make a deep copy of maze to use it without changing original values
     maze = copy.deepcopy(maze1)
