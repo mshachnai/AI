@@ -48,7 +48,15 @@ def BFS(size, maze1):
 
     ret = []
 
+    #initialize counters for max fringe size, max nodes expanded
+    maxFringe = 0
+    maxNodes = 0
+
     while len(queue) != 0:
+
+        #max fringe counter
+        maxFringe = max(maxFringe, len(queue))
+
         node = queue.pop(0)
 
         #check if node is the goal state 
@@ -56,7 +64,7 @@ def BFS(size, maze1):
             while(node):
                 ret.append(node.data)
                 node = node.parent
-            return ret
+            return (ret, [len(ret), maxFringe, maxNodes])
 
         #if node is not goal state, check up/down/left/right for unvisited children
         data = node.data
@@ -74,6 +82,8 @@ def BFS(size, maze1):
                 node.children.append(rightNode)
                 #mark the child node as "visited"
                 maze[row][col+1].val = 2
+                #increment nodes expanded
+                maxNodes+=1
 
         #check down
         if row < size -1:
@@ -82,6 +92,7 @@ def BFS(size, maze1):
                 queue.append(downNode)
                 node.children.append(downNode)
                 maze[row+1][col].val = 2
+                maxNodes+=1
 
         #check up
         if row > 0:
@@ -90,6 +101,7 @@ def BFS(size, maze1):
                 queue.append(upNode)
                 node.children.append(upNode)
                 maze[row-1][col].val = 2
+                maxNodes+=1
 
         #check left
         if col > 0: 
@@ -98,7 +110,7 @@ def BFS(size, maze1):
                 queue.append(leftNode)
                 node.children.append(leftNode)
                 maze[row][col-1].val = 2
-
+                maxNodes+=1
 
 
 def DFS(size, maze1):
@@ -107,7 +119,6 @@ def DFS(size, maze1):
     Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
 
-    #why do we need the size? the input just needs to be the map and we can do len(map) and len(map[0])
 
     #make a deep copy of maze to use it without changing original values
     maze = copy.deepcopy(maze1)
@@ -121,7 +132,15 @@ def DFS(size, maze1):
 
     ret = []
 
+    #initialize counters for max fringe size, max nodes expanded
+    maxFringe = 0
+    maxNodes = 0
+
     while (fringe.isEmpty() == False):
+
+        #max fringe counter
+        maxFringe = max(maxFringe, fringe.size())
+       
         node = fringe.pop()
 
         #check if node is the goal state 
@@ -129,7 +148,7 @@ def DFS(size, maze1):
             while(node):
                 ret.append(node.data)
                 node = node.parent
-            return ret
+            return (ret, [len(ret), maxFringe, maxNodes])
 
         #if node is not goal state, check up/down/left/right for unvisited children
         data = node.data
@@ -143,7 +162,7 @@ def DFS(size, maze1):
                 fringe.push(upNode)
                 node.children.append(upNode)
                 maze[row-1][col].val = 2
-
+                maxNodes+=1
         #check left
         if col > 0: 
             if(maze[row][col-1].val == 0):
@@ -151,7 +170,7 @@ def DFS(size, maze1):
                 fringe.push(leftNode)
                 node.children.append(leftNode)
                 maze[row][col-1].val = 2
-
+                maxNodes+=1
         #check right
         if col < size-1:
             if(maze[row][col+1].val == 0):
@@ -163,6 +182,8 @@ def DFS(size, maze1):
                 node.children.append(rightNode)
                 #mark the child node as "visited"
                 maze[row][col+1].val = 2
+                #increment nodes expanded
+                maxNodes+=1
 
         #check down
         if row < size -1:
@@ -171,7 +192,7 @@ def DFS(size, maze1):
                 fringe.push(downNode)
                 node.children.append(downNode)
                 maze[row+1][col].val = 2
-
+                maxNodes+=1
 
 def AStarM(size, maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
@@ -191,7 +212,14 @@ def AStarM(size, maze1):
 
     ret = []
 
+    #initialize counters for max fringe size, max nodes expanded
+    maxFringe = 0
+    maxNodes = 0
+
     while len(queue) != 0:
+        #max fringe counter
+        maxFringe = max(maxFringe, len(queue))
+        
         node = queue.pop(0)
 
         # check if node is the goal state
@@ -199,7 +227,8 @@ def AStarM(size, maze1):
             while (node):
                 ret.append(node.data)
                 node = node.parent
-            return ret
+            return (ret, [len(ret), maxFringe, maxNodes])
+
 
         # if node is not goal state, check up/down/left/right for unvisited children
         data = node.data
@@ -219,6 +248,9 @@ def AStarM(size, maze1):
                 node.children.append(rightNode)
                 # mark the child node as "visited"
                 maze[row][col + 1].val = 2
+                #increment nodes expanded
+                maxNodes+=1
+
 
         # check down
         if row < size - 1:
@@ -228,7 +260,7 @@ def AStarM(size, maze1):
                 queue = insertNodeByPriorityM(queue, downNode, estDist, size)
                 node.children.append(downNode)
                 maze[row + 1][col].val = 2
-
+                maxNodes+=1
         # check up
         if row > 0:
             if (maze[row - 1][col].val == 0):
@@ -237,7 +269,7 @@ def AStarM(size, maze1):
                 queue = insertNodeByPriorityM(queue, upNode, estDist, size)
                 node.children.append(upNode)
                 maze[row - 1][col].val = 2
-
+                maxNodes+=1
         # check left
         if col > 0:
             if (maze[row][col - 1].val == 0):
@@ -246,7 +278,7 @@ def AStarM(size, maze1):
                 queue = insertNodeByPriorityM(queue, leftNode, estDist, size)
                 node.children.append(leftNode)
                 maze[row][col - 1].val = 2
-
+                maxNodes+=1
 
 def estTotalDistM(dist, row, col, size):
     #use distance already traveled and Manhattan distance to estimate total distance
@@ -271,7 +303,14 @@ def AStarE(size, maze1):
 
     ret = []
 
+    #initialize counters for max fringe size, max nodes expanded
+    maxFringe = 0
+    maxNodes = 0
+
     while len(queue) != 0:
+        #max fringe counter
+        maxFringe = max(maxFringe, len(queue))
+     
         node = queue.pop(0)
 
         # check if node is the goal state
@@ -279,7 +318,7 @@ def AStarE(size, maze1):
             while (node):
                 ret.append(node.data)
                 node = node.parent
-            return ret
+            return (ret, [len(ret), maxFringe, maxNodes])
 
         # if node is not goal state, check up/down/left/right for unvisited children
         data = node.data
@@ -299,6 +338,9 @@ def AStarE(size, maze1):
                 node.children.append(rightNode)
                 # mark the child node as "visited"
                 maze[row][col + 1].val = 2
+                #increment nodes expanded
+                maxNodes+=1
+
 
         # check down
         if row < size - 1:
@@ -308,7 +350,7 @@ def AStarE(size, maze1):
                 queue = insertNodeByPriorityE(queue, downNode, estDist, size)
                 node.children.append(downNode)
                 maze[row + 1][col].val = 2
-
+                maxNodes+=1
         # check up
         if row > 0:
             if (maze[row - 1][col].val == 0):
@@ -317,7 +359,7 @@ def AStarE(size, maze1):
                 queue = insertNodeByPriorityE(queue, upNode, estDist, size)
                 node.children.append(upNode)
                 maze[row - 1][col].val = 2
-
+                maxNodes+=1
         # check left
         if col > 0:
             if (maze[row][col - 1].val == 0):
@@ -326,8 +368,8 @@ def AStarE(size, maze1):
                 queue = insertNodeByPriorityE(queue, leftNode, estDist, size)
                 node.children.append(leftNode)
                 maze[row][col - 1].val = 2
-
-
+                maxNodes+=1
+    
 
 def estTotalDistE(dist, row, col, size):
     #use distance already traveled and Euclidean distance to estimate total distance

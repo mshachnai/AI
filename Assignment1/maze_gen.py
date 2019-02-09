@@ -90,29 +90,30 @@ def main():
     if res is None : 
         print("No path")
     else : 
-        maze_visual(dim, maze, res)
+        maze_visual(dim, maze, res[0])
+        print(res[1])
 
     print("A* Manhattan")
     res = AStarM(dim, maze)
     if res is None : 
         print("No path")
     else : 
-        maze_visual(dim, maze, res)
-
+        maze_visual(dim, maze, res[0])
+        print(res[1])
     print("BFS")
     res = BFS(dim, maze)
     if res is None : 
         print("No path")
     else : 
-        maze_visual(dim, maze, res)
-
+        maze_visual(dim, maze, res[0])
+        print(res[1])
     print("DFS")
     res = DFS(dim, maze)
     if res is None : 
         print("No path")
     else : 
-        maze_visual(dim, maze, res)
-
+        maze_visual(dim, maze, res[0])
+        print(res[1])
     #4)print algorithm stats with graph
 
     return

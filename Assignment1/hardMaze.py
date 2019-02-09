@@ -1,4 +1,5 @@
 from maze_gen import maze_gen
+from search import BFS, DFS, AStarM, AStarE
 
 def generateHardMaze(size):
     #create a random maze 
