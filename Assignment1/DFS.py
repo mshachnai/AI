@@ -61,6 +61,22 @@ def DFS(size, maze1):
         row = data[0]
         col = data[1]
         
+        #check up
+        if row > 0:
+            if(maze[row-1][col].val == 0):
+                upNode = Node((row-1, col), [], node)
+                fringe.push(upNode)
+                node.children.append(upNode)
+                maze[row-1][col].val = 2
+
+        #check left
+        if col > 0: 
+            if(maze[row][col-1].val == 0):
+                leftNode = Node((row, col-1), [], node)
+                fringe.push(leftNode)
+                node.children.append(leftNode)
+                maze[row][col-1].val = 2
+
         #check right
         if col < size-1:
             if(maze[row][col+1].val == 0):
@@ -81,21 +97,6 @@ def DFS(size, maze1):
                 node.children.append(downNode)
                 maze[row+1][col].val = 2
 
-        #check up
-        if row > 0:
-            if(maze[row-1][col].val == 0):
-                upNode = Node((row-1, col), [], node)
-                fringe.push(upNode)
-                node.children.append(upNode)
-                maze[row-1][col].val = 2
-
-        #check left
-        if col > 0: 
-            if(maze[row][col-1].val == 0):
-                leftNode = Node((row, col-1), [], node)
-                fringe.push(leftNode)
-                node.children.append(leftNode)
-                maze[row][col-1].val = 2
 
 
 if __name__ == "__main__":
