@@ -125,6 +125,7 @@ def DFS(maze1):
 
     #make a deep copy of maze to use it without changing original values
     maze = copy.deepcopy(maze1)
+ 
     #edge case: checking if the starting cell is somehow not empty
     if maze[0][0].val == 1:
         return None
