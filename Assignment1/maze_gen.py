@@ -1,8 +1,5 @@
 #Maze Generator -- INTRO TO AI 198:520 -- Rutgers University -- M.Shachnai
-import DFS as dfs 
-import BFS as bfs
-import AStarEuclidean as astare
-import AStarManhattan as astarm
+from search import DFS, BFS, AStarE, AStarM
 from tkinter import *
 from tkinter import ttk
 import random
@@ -18,7 +15,9 @@ class Cell:
     
     
 #function to generate maze - takes in dimension of maze, probability of blocked cell, and 2d array
-def maze_gen(dim, prob, maze):
+def maze_gen(dim, prob):
+    maze = []
+
     random.seed()
     for i in range(0,dim):
         maze.append([])
@@ -33,7 +32,7 @@ def maze_gen(dim, prob, maze):
             else : 
                 maze[i].append(Cell(val = 0, coord = (i,j))) #open cell
                 #print(maze[i][j].coord)     #coordinates of open cells cells
-    return
+    return maze
 
 #function to generate a visual of the maze and its solution if given
 ######need to work on showing actual path taken
@@ -80,38 +79,35 @@ def main():
     dim = int(input("Enter maze dimension: "))
     prob = float(input("Enter probability: "))
 
-    #1)initialize list which forms basis for 2d maze
-    maze = []
-
-    #2)run maze generator 
-    maze_gen(dim, prob, maze)
+    #1)run maze_gen
+    maze = maze_gen(dim, prob)
 
     #3)run search algorithm and generate maze visual
     #if there is a path - show it with maze_visual
     #otherwise print("No path")
     print("A* Euclidean")
-    res = astare.AStarE(dim, maze)
+    res = AStarE(dim, maze)
     if res is None : 
         print("No path")
     else : 
         maze_visual(dim, maze, res)
 
     print("A* Manhattan")
-    res = astarm.AStarM(dim, maze)
+    res = AStarM(dim, maze)
     if res is None : 
         print("No path")
     else : 
         maze_visual(dim, maze, res)
 
     print("BFS")
-    res = bfs.BFS(dim, maze)
+    res = BFS(dim, maze)
     if res is None : 
         print("No path")
     else : 
         maze_visual(dim, maze, res)
 
     print("DFS")
-    res = dfs.DFS(dim, maze)
+    res = DFS(dim, maze)
     if res is None : 
         print("No path")
     else : 
