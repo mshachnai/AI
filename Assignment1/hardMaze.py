@@ -4,18 +4,21 @@ from random import random
 from math import ceil, floor
 from copy import deepcopy
 
-MAX_LOOP_LEN = 30
+START_PROB = 0.3
+EDIT_PROB = 0.1
+DIM = 6
+MAX_LOOP_LEN = 200
 OUTER_LOOP_LEN = 20
-SEARCH = "bfs"
+SEARCH = "dfs"
 METRIC = 0
+PFUNC=False
 
-
-def generateHardMaze(size):
+def generateHardMaze():
     #create a random maze 
     #do random starting probabilities until we find a good one
     
-    dim = 6        #int(input("Enter maze dimensions: "))
-    prob = 0.3      #float(input("Enter starting probability: "))
+                    #int(input("Enter maze dimensions: "))
+                    #float(input("Enter starting probability: "))
     beamSize = 8    #int(input("Enter beam size: "))
 
     worstLen = ceil(0.25 * beamSize)
@@ -24,7 +27,7 @@ def generateHardMaze(size):
     #this is a list of mazes. we add <beamSize> mazes to start off the algorithm
     mazeList = []
     while len(mazeList) < beamSize:
-        maze = maze_gen(dim, prob)
+        maze = maze_gen(DIM, START_PROB)
         maze_eval = mazeEval(maze, SEARCH, METRIC) 
         if maze_eval:
             mazeList.append((maze, maze_eval))
@@ -62,20 +65,23 @@ def generateHardMaze(size):
             for mazeTuple in mazeList:
 
                 #test to see which editMaze algorithm would work the best
-                
                 #test1: the one where 0->1 and 1-> 0
+                print("running test 1")
                 sum1 = runTest(mazeTuple, editMaze1)
 
                 #test2: the one where we only 1->0
+                print("running test 2")
                 sum2 = runTest(mazeTuple, editMaze2)
 
                 #test3: the one where we only 0->1
+                print("running test 3")
                 sum3 = runTest(mazeTuple, editMaze3)
 
                 print("sum1 is ", sum1, " sum2 is ", sum2, " sum3 is ", sum3)
                 maxSum = max(sum1, sum2, sum3)
 
                 #find the maximum sum out of them 
+                print("generating actual mazes")
                 editMaze = editMaze1
                 if maxSum == sum1:
                     print("both")
@@ -104,7 +110,8 @@ def generateHardMaze(size):
                 finalMazes = sorted(mazeList, key= lambda x : x[1])
             else:
                 finalMazes = sorted(newMazes, key= lambda x : x[1])
-
+            
+            print(finalMazes)
             return finalMazes[-1][0]
 
         #sort newMazes by the performance metric in ascending order (worst -> best)
@@ -131,9 +138,8 @@ def runTest(mazeTuple, editMaze):
         if val:
             Sum+=val
             counter+=1
-        else:
-            print("invalid maze")
-            maze_visual(len(newMaze), newMaze)
+            #print("invalid maze")
+            #maze_visual(len(newMaze), newMaze)
     return Sum
 
 
@@ -169,11 +175,11 @@ def mazeEval(maze, search, metric):
         res = AStarM(maze)
 
     if res:
-        print("path!")
         return res[1][metric]
     else:
-        print("no path")
-        maze_visual(len(maze), maze ) #delete later
+        #print("no path")
+
+        #maze_visual(len(maze), maze ) #delete later
         return None
 
 
@@ -197,7 +203,7 @@ def editMaze1(mazeOrig):
     #if prob is too large, the new mazes will not be similar to parent at all
     #   -problem becomes very similar to random walk
     #testing idea: test in increments of 0.05 until we're satisfied
-    prob = 0.10
+    prob = EDIT_PROB
 
     #make the probability a function of the row and column.
     #this is to prevent the start/goal corners from getting blocked off
@@ -211,8 +217,12 @@ def editMaze1(mazeOrig):
                 if rand < prob:
                     maze[r][c] = Cell(0, curr.heuri, curr.coord)
             elif curr.val == 0:
-                if rand < calculateProb(r,c,prob, dim):
-                    maze[r][c] = Cell(1, curr.heuri, curr.coord)
+                if PFUNC:
+                    if rand < calculateProb(r,c,prob, dim):
+                        maze[r][c] = Cell(1, curr.heuri, curr.coord)
+                else:
+                    if rand < prob:
+                        maze[r][c] = Cell(1, curr.heuri, curr.coord)
 
     return maze
 
@@ -233,7 +243,7 @@ def editMaze2(mazeOrig):
     #if prob is too large, it's counterproductive to finding difficult mazes
     #if prob is too small, the program might run for a long time
     #testing idea: start at 0.10 and work our way smaller until the program runs too slowly
-    prob = 0.10
+    prob = EDIT_PROB
 
     for r in range(dim):
         for c in range(dim):
@@ -258,39 +268,19 @@ def editMaze3(mazeOrig):
     
     dim = len(maze)
 
-    #this is wack
-    sol = BFS(maze)
-
-    #check if there are multiple "in a row " elements in the path
-    path = sol[0]
-
-    prevX = -1
-    prevY = -1
-    prevXCount = 0
-    prevYCount = 0
-    for (x,y) in path:
-        if x == prevX:
-            prevXCount+=1
-        if y == prevY:
-            prevYCount+=1
-
-        if prevXCount == 2 or prevYCount == 2:
-            curr = maze[prevX][prevY]
-            maze[prevX][prevY] = Cell(1, curr.heuri, curr.coord)
-            print("3-in-row triggered")
-            return maze
-
-        prevX = x
-        prevY = y
-
+    prob = EDIT_PROB
 
     for r in range(dim):
         for c in range(dim):
             rand = random()
             curr = maze[r][c]
             if curr.val == 0:
-                if rand < prob:
-                    maze[r][c] = Cell(1, curr.heuri, curr.coord)
+                if PFUNC:
+                    if rand < calculateProb(r,c,prob, dim):
+                        maze[r][c] = Cell(1, curr.heuri, curr.coord)
+                else:
+                    if rand < prob:
+                        maze[r][c] = Cell(1, curr.heuri, curr.coord)
 
     return maze
 
@@ -298,13 +288,13 @@ def editMaze3(mazeOrig):
 
 if __name__ == "__main__":
     maze = generateHardMaze(20)
-    res = BFS(maze) #make this main into an actual function that takes input for search type & metric
+    res = DFS(maze) #make this main into an actual function that takes input for search type & metric
     
     print("solution length: " + str(res[1][0]))
     print("max fringe: " + str(res[1][1]))
     print("max nodes: " + str(res[1][2]))
 
-    maze_visual(20,maze, res[0]) #change this function to not take in "dim" as parameter
+    #maze_visual(len(maze),maze, res[0]) #change this function to not take in "dim" as parameter
 
 
 

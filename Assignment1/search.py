@@ -418,5 +418,5 @@ def insertNodeByPriorityE(queue, newNode, estDist, size):
     queue.append(newNode)
     return queue
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
 

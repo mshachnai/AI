@@ -25,9 +25,7 @@ def maze_gen(dim, prob):
     for i in range(0,dim):
         for j in range(0,dim):
             rand = random.random()  #used for generating a value between 0-1
-            #if rand <= prob and (i != 0 or j != 0) and (i != dim-1 or j !=
-            if rand <= calculateProb(i, j, prob, dim) and (i != 0 or j != 0) and (i != dim-1 or j !=
-                    dim-1) :
+            if rand <= prob and (i != 0 or j != 0) and (i != dim-1 or j != dim-1) :
                 maze[i].append(Cell(val = 1, coord = (i,j))) #blocked cell
                 #print(maze[i][j].coord)     #coordinates of blocked cells
             else : 
@@ -75,7 +73,7 @@ def updatePosition():
     return
 
 def calculateProb(r, c, prob, dim):
-    return (prob/dim) * (dim - abs(r + c -dim)) 
+    return (prob/(dim-1)) * ((dim-1) - abs(r + c -(dim-1))) 
 
 
 def main():
