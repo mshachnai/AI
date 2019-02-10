@@ -1,4 +1,4 @@
-from maze_gen import maze_gen, maze_visual, Cell
+from maze_gen import maze_gen, maze_visual, Cell, calculateProb
 from search import BFS, DFS, AStarM, AStarE
 from random import random
 from math import ceil, floor
@@ -6,15 +6,16 @@ from copy import deepcopy
 
 MAX_LOOP_LEN = 30
 OUTER_LOOP_LEN = 20
+SEARCH = "bfs"
+METRIC = 0
+
+
 def generateHardMaze(size):
     #create a random maze 
     #do random starting probabilities until we find a good one
     
-    SEARCH = "bfs"
-    METRIC = 1
-
-    dim = 20        #int(input("Enter maze dimensions: "))
-    prob = 0.4      #float(input("Enter starting probability: "))
+    dim = 6        #int(input("Enter maze dimensions: "))
+    prob = 0.3      #float(input("Enter starting probability: "))
     beamSize = 8    #int(input("Enter beam size: "))
 
     worstLen = ceil(0.25 * beamSize)
@@ -29,6 +30,8 @@ def generateHardMaze(size):
             mazeList.append((maze, maze_eval))
     print("initial mazes appended")
 
+
+    #each iteration of this loop is like another layer of the tree
     for i in range(OUTER_LOOP_LEN):
         #generate 4 * beamSize mazes
         #push the worst 1/4 * beamSize mazes, and push the best 3/4 * beamsize (for "genetic diversity")
@@ -41,21 +44,50 @@ def generateHardMaze(size):
         #   -make another editMaze that deletes more obstacles than it adds 
         
         
+        #this loop generates a lot of possible mazes, which we will cull when the loop breaks
         loopCounter = 0
-        editMaze = editMaze1 #set the editMaze function
         while len(newMazes) < beamSize:
             
             
             #keep track of the number of times this loop executes
             #if it runs for too long, change the editMaze function
+            """
             if loopCounter == 10:
                 print("switching editMaze func")
                 editMaze = editMaze2
-
+            """
             if loopCounter == MAX_LOOP_LEN:
                 break
 
             for mazeTuple in mazeList:
+
+                #test to see which editMaze algorithm would work the best
+                
+                #test1: the one where 0->1 and 1-> 0
+                sum1 = runTest(mazeTuple, editMaze1)
+
+                #test2: the one where we only 1->0
+                sum2 = runTest(mazeTuple, editMaze2)
+
+                #test3: the one where we only 0->1
+                sum3 = runTest(mazeTuple, editMaze3)
+
+                print("sum1 is ", sum1, " sum2 is ", sum2, " sum3 is ", sum3)
+                maxSum = max(sum1, sum2, sum3)
+
+                #find the maximum sum out of them 
+                editMaze = editMaze1
+                if maxSum == sum1:
+                    print("both")
+                    editMaze = editMaze1
+                elif maxSum == sum2:
+                    print("remove")
+                    editMaze = editMaze2
+                elif maxSum == sum3:
+                    print("add")
+                    editMaze = editMaze3
+
+                #generate mazes to put into the list of new mazes 
                 for x in range(4):
                     newMaze = editMaze(mazeTuple[0])
                     oldMazeEval = mazeTuple[1]
@@ -78,6 +110,9 @@ def generateHardMaze(size):
         #sort newMazes by the performance metric in ascending order (worst -> best)
         sortedMazes = sorted(newMazes, key = lambda x : x[1])
 
+        #print stats of hardest maze, currently
+        print("curr hardest stats: ",sortedMazes[-1][1])
+
         #cull the poorly performing mazes
         mazeList = sortedMazes[0:worstLen] + sortedMazes[(-1 * bestLen):]
         print("loop has run " + str(i) + " times!")
@@ -86,6 +121,20 @@ def generateHardMaze(size):
     finalMazes = sorted(mazeList, key = lambda x: x[1])
     return finalMazes[-1][0]
 
+
+def runTest(mazeTuple, editMaze):
+    Sum= 0
+    counter = 0
+    while counter < 4:
+        newMaze = editMaze(mazeTuple[0])
+        val = mazeEval(newMaze, SEARCH, METRIC)
+        if val:
+            Sum+=val
+            counter+=1
+        else:
+            print("invalid maze")
+            maze_visual(len(newMaze), newMaze)
+    return Sum
 
 
    
@@ -120,9 +169,12 @@ def mazeEval(maze, search, metric):
         res = AStarM(maze)
 
     if res:
+        print("path!")
         return res[1][metric]
     else:
-        return
+        print("no path")
+        maze_visual(len(maze), maze ) #delete later
+        return None
 
 
 def editMaze1(mazeOrig):
@@ -147,6 +199,10 @@ def editMaze1(mazeOrig):
     #testing idea: test in increments of 0.05 until we're satisfied
     prob = 0.10
 
+    #make the probability a function of the row and column.
+    #this is to prevent the start/goal corners from getting blocked off
+    #f(r,c) = (prob/dim) * (dim - abs(r + c -dim))
+
     for r in range(dim):
         for c in range(dim):
             rand = random()
@@ -155,11 +211,10 @@ def editMaze1(mazeOrig):
                 if rand < prob:
                     maze[r][c] = Cell(0, curr.heuri, curr.coord)
             elif curr.val == 0:
-                if rand < prob:
+                if rand < calculateProb(r,c,prob, dim):
                     maze[r][c] = Cell(1, curr.heuri, curr.coord)
 
     return maze
-
 
 def editMaze2(mazeOrig):
     """
@@ -189,6 +244,56 @@ def editMaze2(mazeOrig):
                     maze[r][c] = Cell(0, curr.heuri, curr.coord)
 
     return maze
+
+
+def editMaze3(mazeOrig):
+    """
+    returns a slightly modified maze (only flips 0's to 1)
+    """
+
+    #create a deep copy of maze
+
+    #make a deep copy of maze to use it without changing original values
+    maze = deepcopy(mazeOrig)
+    
+    dim = len(maze)
+
+    #this is wack
+    sol = BFS(maze)
+
+    #check if there are multiple "in a row " elements in the path
+    path = sol[0]
+
+    prevX = -1
+    prevY = -1
+    prevXCount = 0
+    prevYCount = 0
+    for (x,y) in path:
+        if x == prevX:
+            prevXCount+=1
+        if y == prevY:
+            prevYCount+=1
+
+        if prevXCount == 2 or prevYCount == 2:
+            curr = maze[prevX][prevY]
+            maze[prevX][prevY] = Cell(1, curr.heuri, curr.coord)
+            print("3-in-row triggered")
+            return maze
+
+        prevX = x
+        prevY = y
+
+
+    for r in range(dim):
+        for c in range(dim):
+            rand = random()
+            curr = maze[r][c]
+            if curr.val == 0:
+                if rand < prob:
+                    maze[r][c] = Cell(1, curr.heuri, curr.coord)
+
+    return maze
+
 
 
 if __name__ == "__main__":
