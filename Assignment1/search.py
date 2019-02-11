@@ -32,7 +32,7 @@ class Stack:
 
    
 def BFS(maze1):
-    """Given the size and the maze itself, the target should be at position (size-1,size-1)
+    """Given the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
     Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
@@ -41,6 +41,8 @@ def BFS(maze1):
 
     #make a deep copy of maze to use it without changing original values
     maze = copy.deepcopy(maze1)
+    
+    # sanity check (if the starting point is a non-empty cell, then the maze is invalid)
     if maze[0][0].val == 1:
         return None
 
@@ -51,6 +53,7 @@ def BFS(maze1):
     ret = []
 
     #initialize counters for max fringe size, max nodes expanded
+    # these values are used to get stats on our algos
     maxFringe = 0
     maxNodes = 0
 
@@ -116,7 +119,7 @@ def BFS(maze1):
 
 
 def DFS(maze1):
-    """Given the size and the maze itself, the target should be at position (size-1,size-1)
+    """Given the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
     Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
