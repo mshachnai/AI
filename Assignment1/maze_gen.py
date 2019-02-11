@@ -12,7 +12,7 @@ import copy
 #1: will show maze visuals
 #2: will show plotting graphs
 #3: will show all visuals
-DEBUG = 3 #if 1: will show maze visuals, if 2: will not
+DEBUG = 3 
 RUNS = 1 #number of times each algorithm is run for timing
 
 #maze generator will be formed using a 2d array of struct named cell
