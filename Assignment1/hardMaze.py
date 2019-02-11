@@ -6,12 +6,13 @@ from copy import deepcopy
 
 START_PROB = 0.3
 EDIT_PROB = 0.1
-DIM = 6
-MAX_LOOP_LEN = 200
-OUTER_LOOP_LEN = 20
-SEARCH = "dfs"
+DIM = 15
+MAX_LOOP_LEN = 800  #switch editMaze to "both"
+MAX_LOOP_LEN2 = 1600 #lower maze quality standards for acceptance
+TREE_DEPTH = 20
+SEARCH = "bfs"
 METRIC = 0
-PFUNC=False
+PFUNC=True
 
 def generateHardMaze():
     #create a random maze 
@@ -26,6 +27,7 @@ def generateHardMaze():
 
     #this is a list of mazes. we add <beamSize> mazes to start off the algorithm
     mazeList = []
+
     while len(mazeList) < beamSize:
         maze = maze_gen(DIM, START_PROB)
         maze_eval = mazeEval(maze, SEARCH, METRIC) 
@@ -35,90 +37,76 @@ def generateHardMaze():
 
 
     #each iteration of this loop is like another layer of the tree
-    for i in range(OUTER_LOOP_LEN):
+    for i in range(TREE_DEPTH):
+        print("aaaa")
         #generate 4 * beamSize mazes
         #push the worst 1/4 * beamSize mazes, and push the best 3/4 * beamsize (for "genetic diversity")
         
         newMazes = []
-        #loop while we haven't exceeded the beam length
-        #this would occur if the mazes that we generate don't have a solution
-        #it might be useful if we keep track of the number of times this loop executes
-        #   -the default editMaze function adds more obstacles than it deletes. 
-        #   -make another editMaze that deletes more obstacles than it adds 
-        
         
         #this loop generates a lot of possible mazes, which we will cull when the loop breaks
-        loopCounter = 0
-        while len(newMazes) < beamSize:
-            
-            
-            #keep track of the number of times this loop executes
-            #if it runs for too long, change the editMaze function
-            """
-            if loopCounter == 10:
-                print("switching editMaze func")
-                editMaze = editMaze2
-            """
-            if loopCounter == MAX_LOOP_LEN:
-                break
+    
+        for mazeTuple in mazeList:
 
-            for mazeTuple in mazeList:
+            #test to see which editMaze algorithm would work the best
+            print("test1")
+            sum1 = runTest(mazeTuple, editMaze1)
 
-                #test to see which editMaze algorithm would work the best
-                #test1: the one where 0->1 and 1-> 0
-                print("running test 1")
-                sum1 = runTest(mazeTuple, editMaze1)
+            #test2: the one where we only 1->0
+            print("test2")
+            sum2 = runTest(mazeTuple, editMaze2)
 
-                #test2: the one where we only 1->0
-                print("running test 2")
-                sum2 = runTest(mazeTuple, editMaze2)
+            #test3: the one where we only 0->1
+            print("test3")
+            sum3 = runTest(mazeTuple, editMaze3)
 
-                #test3: the one where we only 0->1
-                print("running test 3")
-                sum3 = runTest(mazeTuple, editMaze3)
+            maxSum = max(sum1, sum2, sum3)
 
-                print("sum1 is ", sum1, " sum2 is ", sum2, " sum3 is ", sum3)
-                maxSum = max(sum1, sum2, sum3)
-
-                #find the maximum sum out of them 
-                print("generating actual mazes")
+            #find the maximum sum out of them 
+            #print("generating actual mazes")
+            editMaze = editMaze1
+            if maxSum == sum1:
+                print("both")
                 editMaze = editMaze1
-                if maxSum == sum1:
-                    print("both")
-                    editMaze = editMaze1
-                elif maxSum == sum2:
-                    print("remove")
-                    editMaze = editMaze2
-                elif maxSum == sum3:
-                    print("add")
-                    editMaze = editMaze3
+            elif maxSum == sum2:
+                print("remove")
+                editMaze = editMaze2
+            elif maxSum == sum3:
+                print("add")
+                editMaze = editMaze3
 
-                #generate mazes to put into the list of new mazes 
-                for x in range(4):
-                    newMaze = editMaze(mazeTuple[0])
-                    oldMazeEval = mazeTuple[1]
-                    newMazeEval = mazeEval(newMaze, SEARCH, METRIC)
-                    if newMazeEval and newMazeEval > oldMazeEval:
-                        newMazes.append((newMaze, newMazeEval))
-
-            loopCounter+=1
-            print(loopCounter)
-
-        if loopCounter == MAX_LOOP_LEN:
-            print("exceeded MAX_LOOP_LEN. killing program")
-            if len(newMazes) == 0:
-                finalMazes = sorted(mazeList, key= lambda x : x[1])
-            else:
-                finalMazes = sorted(newMazes, key= lambda x : x[1])
+            #generate mazes to put into the list of new mazes 
             
-            print(finalMazes)
-            return finalMazes[-1][0]
+            loopCounter = 0
+            numMazes = 0 #want to generate 4 "child" mazes for every maze
+            standard = mazeTuple[1] #mazes must exceed this number before being put into queue
+            while numMazes < 4:
+                newMaze = editMaze(mazeTuple[0])
+                newMazeEval = mazeEval(newMaze, SEARCH, METRIC)
+                if newMazeEval and newMazeEval > standard:
+                    newMazes.append((newMaze, newMazeEval))
+                    numMazes+=1
+                loopCounter+=1
 
+                if loopCounter == MAX_LOOP_LEN:
+                    print("exceeded MAX_LOOP_LEN. using remove/add func")
+                    #this is necessary b/c "add" editMaze will eventually stall program,
+                    #unless we prevent it
+                    editMaze = editMaze1
+                if loopCounter > MAX_LOOP_LEN2:
+                    standard -=1 #gradually lower the standard for accepting maze
+
+            newMazes.append(mazeTuple) #append the old maze, just to be safe
+                    
+
+        #at this point, we should have 5 * beamSize mazes. 
         #sort newMazes by the performance metric in ascending order (worst -> best)
         sortedMazes = sorted(newMazes, key = lambda x : x[1])
 
         #print stats of hardest maze, currently
         print("curr hardest stats: ",sortedMazes[-1][1])
+        for m in sortedMazes:
+            print(m[1], end=" ")
 
         #cull the poorly performing mazes
         mazeList = sortedMazes[0:worstLen] + sortedMazes[(-1 * bestLen):]
@@ -126,6 +114,7 @@ def generateHardMaze():
 
     #mazes are sorted from (worst -> best)
     finalMazes = sorted(mazeList, key = lambda x: x[1])
+    print("return 1")
     return finalMazes[-1][0]
 
 
@@ -287,14 +276,17 @@ def editMaze3(mazeOrig):
 
 
 if __name__ == "__main__":
-    maze = generateHardMaze(20)
-    res = DFS(maze) #make this main into an actual function that takes input for search type & metric
+    maze = generateHardMaze()
+    if SEARCH == "bfs":
+        res = BFS(maze)
+    elif SEARCH == "dfs":
+        res = DFS(maze) #make this main into an actual function that takes input for search type & metric
     
     print("solution length: " + str(res[1][0]))
     print("max fringe: " + str(res[1][1]))
     print("max nodes: " + str(res[1][2]))
 
-    #maze_visual(len(maze),maze, res[0]) #change this function to not take in "dim" as parameter
+    maze_visual(len(maze),maze, res[0]) #change this function to not take in "dim" as parameter
 
 
 
