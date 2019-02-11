@@ -134,7 +134,7 @@ def main():
             maze_visual(dim, maze, res[0])
             #print(res[1])
 
-    #4)plot algorithm stats with graphs (add data here)
+    #4)plot algorithm stats with graphs (add data here - to be completed)
     #density vs. solvability
     array = [1,2,3,4]
     plt.plot(array, [1, 2, 3, 4], 'ro')
