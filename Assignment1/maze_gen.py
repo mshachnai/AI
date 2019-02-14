@@ -1,6 +1,8 @@
 #Maze Generator -- INTRO TO AI 198:520 -- Rutgers University -- M.Shachnai
 from search import DFS, BFS, AStarE, AStarM
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib import pyplot as plt
 from tkinter import *
 from tkinter import ttk
 import timeit as tm
@@ -58,24 +60,24 @@ def maze_visual(dim, maze, sol = []):
 
             #top left cell of maze will be named 'S' - start
             if r == 0 and c == 0 :  
-                button1 = Button(root, text = "S", relief = SOLID, borderwidth = 1, bg = "light blue", height = 1, width = 1 ).grid(row=r,column=c)
+                button1 = Button(root, text = "S", relief = SOLID, borderwidth = 1, highlightbackground = "light blue", height = 1, width = 1 ).grid(row=r,column=c)
 
             #bottom right cell of maze will be named 'G' - goal
             elif r == dim-1 and c == dim-1 :  
-                button2 = Button(root, text = "G", command = root.destroy, relief = SOLID, borderwidth = 1, bg = "light blue", width = 1 ).grid(row=r,column=c)
+                button2 = Button(root, text = "G", command = root.destroy, relief = SOLID, borderwidth = 1, highlightbackground = "light blue", width = 1 ).grid(row=r,column=c)
 
             #if cell value == 1, this is a blocked cell
             elif maze[r][c].val == 1:
-                button3 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, bg = "black", width = 1).grid(row=r,column=c)
+                button3 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, highlightbackground = "black", width = 1).grid(row=r,column=c)
                         
             #mark path on the maze visual by checking the cell coordinate is
             #listed in the solution array, if it is - mark the specific cell
             elif (r,c) in sol:
-                button4 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, bg = "yellow", width = 1).grid(row=r,column=c)
+                button4 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, highlightbackground = "yellow", width = 1).grid(row=r,column=c)
                         
             #for all other cases, create white cells
             else:
-                button5 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, bg = "white", width = 1).grid(row=r,column=c)
+                button5 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, highlightbackground = "white", width = 1).grid(row=r,column=c)
 
     root.mainloop()
     return
@@ -83,73 +85,80 @@ def maze_visual(dim, maze, sol = []):
 
 def main():
 
-    #take in user input of maze dimension and blocked cell probability
-    dim = int(input("Enter maze dimension: "))
-    prob = float(input("Enter probability: "))
+    numberOfSuccesses = 0
+    for i in range(100):
+        #take in user input of maze dimension and blocked cell probability
+        dim = 30#int(input("Enter maze dimension: "))
+        prob = 0.3#float(input("Enter probability: "))
 
-    #1)run maze_gen
-    maze = maze_gen(dim, prob)
+        #1)run maze_gen
+        maze = maze_gen(dim, prob)
 
-    #2)run search algorithm and generate maze visual
-    #if there is a path - show it with maze_visual
-    #otherwise print("No path")
-    print("A* Euclidean")
-    res = AStarE(maze)
-    print(tm.timeit(lambda: AStarE(maze), number = RUNS))
-    if DEBUG == 1 or DEBUG == 3 :
-        if res is None : 
-            print("No path")
-        else : 
-            maze_visual(dim, maze, res[0])
+        #2)run search algorithm and generate maze visual
+        #if there is a path - show it with maze_visual
+        #otherwise print("No path")
+        """
+        print("A* Euclidean")
+        res = AStarE(maze)
+        print(tm.timeit(lambda: AStarE(maze), number = RUNS))
+        if DEBUG == 1 or DEBUG == 3 :
+            if res is None : 
+                print("No path")
+            else : 
+                maze_visual(dim, maze, res[0])
 
-        #print(res[1])
-
-    print("A* Manhattan")
-    res = AStarM(maze)
-    print(tm.timeit(lambda: AStarM(maze), number = RUNS))
-    if DEBUG == 1 or DEBUG == 3 :
-        if res is None : 
-            print("No path")
-        else : 
-            maze_visual(dim, maze, res[0])
             #print(res[1])
 
-    print("BFS")
-    res = BFS(maze)
-    print(tm.timeit(lambda: BFS(maze), number = RUNS))
-    if DEBUG == 1 or DEBUG == 3 :
-        if res is None : 
-            print("No path")
-        else : 
-            maze_visual(dim, maze, res[0])
-            #print(res[1])
+        print("A* Manhattan")
+        res = AStarM(maze)
+        print(tm.timeit(lambda: AStarM(maze), number = RUNS))
+        if DEBUG == 1 or DEBUG == 3 :
+            if res is None : 
+                print("No path")
+            else : 
+                maze_visual(dim, maze, res[0])
+                #print(res[1])
 
-    print("DFS")
-    res = DFS(maze)
-    print(tm.timeit(lambda: DFS(maze), number = RUNS))
-    if DEBUG == 1 or DEBUG == 3 :
-        if res is None : 
-            print("No path")
-        else : 
-            maze_visual(dim, maze, res[0])
-            #print(res[1])
-
+        print("BFS")
+        res = BFS(maze)
+        print(tm.timeit(lambda: BFS(maze), number = RUNS))
+        if DEBUG == 1 or DEBUG == 3 :
+            if res is None : 
+                print("No path")
+            else : 
+                maze_visual(dim, maze, res[0])
+                #print(res[1])
+        """
+        print("DFS")
+        res = DFS(maze)
+        print(tm.timeit(lambda: DFS(maze), number = RUNS))
+        if DEBUG == 1 or DEBUG == 3 :
+            if res is None : 
+                print("No path")
+            else :
+                numberOfSuccesses += 1
+                #print("success@#$%@#$%@#", numberOfSuccesses)
+                #maze_visual(dim, maze, res[0])
+                #print(res[1])
+        """
+        
+        
+        #density vs. shortest expected path
+        plt.plot([1,2,3,4], [1, 2, 7, 8], 'ro')
+        plt.ylabel('density')
+        plt.xlabel('shortest expected path')
+        if DEBUG == 2 or DEBUG == 3:
+            plt.show()
+        """
+    print (numberOfSuccesses)
     #4)plot algorithm stats with graphs (add data here - to be completed)
     #density vs. solvability
-    array = [1,2,3,4]
-    plt.plot(array, [1, 2, 3, 4], 'ro')
-    plt.ylabel('density')
-    plt.xlabel('solvability')
+    array = [0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1]
+    plt.plot(array, [1, .94, .75, .54, .2, 0, 0, 0, 0, 0, 0], 'ro')
+    plt.ylabel('solvability')
+    plt.xlabel('density')
     if DEBUG == 2 or DEBUG == 3 :
-        plt.show()
-    
-    #density vs. shortest expected path
-    plt.plot([1,2,3,4], [1, 2, 7, 8], 'ro')
-    plt.ylabel('density')
-    plt.xlabel('shortest expected path')
-    if DEBUG == 2 or DEBUG == 3:
-        plt.show()
-
+       plt.show()
     return
 
 if __name__ == "__main__":
