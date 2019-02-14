@@ -1,9 +1,19 @@
 #Maze Generator -- INTRO TO AI 198:520 -- Rutgers University -- M.Shachnai
 from search import DFS, BFS, AStarE, AStarM
+import matplotlib.pyplot as plt
 from tkinter import *
 from tkinter import ttk
+import timeit as tm
 import random
 import copy
+
+#DEBUG is used for turning visuals on/off:
+#0: will not show any visuals
+#1: will show maze visuals
+#2: will show plotting graphs
+#3: will show all visuals
+DEBUG = 3 
+RUNS = 1 #number of times each algorithm is run for timing
 
 #maze generator will be formed using a 2d array of struct named cell
 class Cell:
@@ -69,8 +79,6 @@ def maze_visual(dim, maze, sol = []):
     root.mainloop()
     return
 
-def updatePosition(): 
-    return
 
 def calculateProb(r, c, prob, dim):
     return (prob/(dim-1)) * ((dim-1) - abs(r + c -(dim-1))) 
@@ -85,42 +93,67 @@ def main():
     #1)run maze_gen
     maze = maze_gen(dim, prob)
 
-    #3)run search algorithm and generate maze visual
+    #2)run search algorithm and generate maze visual
     #if there is a path - show it with maze_visual
     #otherwise print("No path")
     print("A* Euclidean")
     res = AStarE(maze)
-    if res is None : 
-        print("No path")
-    else : 
-        maze_visual(dim, maze, res[0])
-        print(res[1])
+    print(tm.timeit(lambda: AStarE(maze), number = RUNS))
+    if DEBUG == 1 or DEBUG == 3 :
+        if res is None : 
+            print("No path")
+        else : 
+            maze_visual(dim, maze, res[0])
+
+        #print(res[1])
 
     print("A* Manhattan")
     res = AStarM(maze)
-    if res is None : 
-        print("No path")
-    else : 
-        maze_visual(dim, maze, res[0])
-        print(res[1])
+    print(tm.timeit(lambda: AStarM(maze), number = RUNS))
+    if DEBUG == 1 or DEBUG == 3 :
+        if res is None : 
+            print("No path")
+        else : 
+            maze_visual(dim, maze, res[0])
+            #print(res[1])
+
     print("BFS")
     res = BFS(maze)
-    if res is None : 
-        print("No path")
-    else : 
-        maze_visual(dim, maze, res[0])
-        print(res[1])
+    print(tm.timeit(lambda: BFS(maze), number = RUNS))
+    if DEBUG == 1 or DEBUG == 3 :
+        if res is None : 
+            print("No path")
+        else : 
+            maze_visual(dim, maze, res[0])
+            #print(res[1])
+
     print("DFS")
     res = DFS(maze)
-    if res is None : 
-        print("No path")
-    else : 
-        maze_visual(dim, maze, res[0])
-        print(res[1])
-    #4)print algorithm stats with graph
+    print(tm.timeit(lambda: DFS(maze), number = RUNS))
+    if DEBUG == 1 or DEBUG == 3 :
+        if res is None : 
+            print("No path")
+        else : 
+            maze_visual(dim, maze, res[0])
+            #print(res[1])
+
+    #4)plot algorithm stats with graphs (add data here - to be completed)
+    #density vs. solvability
+    array = [1,2,3,4]
+    plt.plot(array, [1, 2, 3, 4], 'ro')
+    plt.ylabel('density')
+    plt.xlabel('solvability')
+    if DEBUG == 2 or DEBUG == 3 :
+        plt.show()
+    
+    #density vs. shortest expected path
+    plt.plot([1,2,3,4], [1, 2, 7, 8], 'ro')
+    plt.ylabel('density')
+    plt.xlabel('shortest expected path')
+    if DEBUG == 2 or DEBUG == 3:
+        plt.show()
 
     return
 
-
-if __name__ == " __main__":
+if __name__ == "__main__":
     main()
