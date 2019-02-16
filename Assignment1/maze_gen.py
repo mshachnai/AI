@@ -69,6 +69,10 @@ def maze_visual(dim, maze, sol = []):
             #if cell value == 1, this is a blocked cell
             elif maze[r][c].val == 1:
                 button3 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, highlightbackground = "black", width = 1).grid(row=r,column=c)
+
+            #if cell value == 2, this is a blocked cell
+            elif maze[r][c].val == 2:
+                button6 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, highlightbackground = "red", width = 1).grid(row=r,column=c)
                         
             #mark path on the maze visual by checking the cell coordinate is
             #listed in the solution array, if it is - mark the specific cell
@@ -85,71 +89,134 @@ def maze_visual(dim, maze, sol = []):
 
 def main():
 
-    numberOfSuccesses = 0
-    for i in range(100):
-        #take in user input of maze dimension and blocked cell probability
-        dim = 30#int(input("Enter maze dimension: "))
-        prob = 0.3#float(input("Enter probability: "))
+    eavg = []
+    mavg = []
 
-        #1)run maze_gen
-        maze = maze_gen(dim, prob)
+    ne = []
+    nm = []
+    
 
-        #2)run search algorithm and generate maze visual
-        #if there is a path - show it with maze_visual
-        #otherwise print("No path")
-        """
-        print("A* Euclidean")
-        res = AStarE(maze)
-        print(tm.timeit(lambda: AStarE(maze), number = RUNS))
-        if DEBUG == 1 or DEBUG == 3 :
-            if res is None : 
-                print("No path")
-            else : 
-                maze_visual(dim, maze, res[0])
+    for j in range(10):
+        avgEruntime = []
+        avgMruntime = []
 
+        numberOfNodesExpandede = []
+        numberOfNodesExpandedm = []
+        
+        for i in range(10):
+            #take in user input of maze dimension and blocked cell probability
+            dim = 30#int(input("Enter maze dimension: "))
+            prob = (j/10)#float(input("Enter probability: "))
+
+            #1)run maze_gen
+            maze = maze_gen(dim, prob)
+
+            #2)run search algorithm and generate maze visual
+            #if there is a path - show it with maze_visual
+            #otherwise print("No path")
+            
+            #print("A* Euclidean")
+            res = AStarE(maze)
+            avgEruntime.append(tm.timeit(lambda: AStarE(maze), number = RUNS))
+            if DEBUG == 1 or DEBUG == 3 :
+                if res is None :
+                    print("No path")
+                else : 
+                    numberOfNodesExpandede.append(res[1][2])
+                    #maze_visual(dim, maze, res[0])
+
+
+            #print("A* Manhattan")
+            res = AStarM(maze)
+            avgMruntime.append(tm.timeit(lambda: AStarM(maze), number = RUNS))
+            if DEBUG == 1 or DEBUG == 3 :
+                if res is None :
+                    print("No path")
+                else : 
+                    numberOfNodesExpandedm.append(res[1][2])
+                    #maze_visual(dim, maze, res[0])
+
+
+        etotal = 0
+        mtotal = 0
+        nodese = 0
+        nodesm = 0
+        
+        for i in range(10):
+             etotal += avgEruntime[i]
+             mtotal += avgMruntime[i]
+
+        for i in range(len(numberOfNodesExpandede)):     
+            nodese += numberOfNodesExpandede[i]
+
+        for i in range(len(numberOfNodesExpandedm)):
+            nodesm += numberOfNodesExpandedm[i]
+
+        etotal /= 10
+        mtotal /= 10
+
+        if (len(numberOfNodesExpandede) != 0):
+            nodese /= len(numberOfNodesExpandede)
+        else :
+            nodese = 0
+
+        if (len(numberOfNodesExpandedm) != 0):
+            nodesm /= len(numberOfNodesExpandedm)
+        else :
+            nodesm = 0
+            
+        eavg.append(etotal)
+        mavg.append(mtotal)
+        ne.append(nodese)
+        nm.append(nodesm)
+        print (nm)
+        
+    
+            
+    """
+    print("BFS")
+    res = BFS(maze)
+    print(tm.timeit(lambda: BFS(maze), number = RUNS))
+    if DEBUG == 1 or DEBUG == 3 :
+        if res is None : 
+            print("No path")
+        else : 
+            maze_visual(dim, maze, res[0])
             #print(res[1])
+    
+    print("DFS")
+    res = DFS(maze)
+    print(tm.timeit(lambda: DFS(maze), number = RUNS))
+    if DEBUG == 1 or DEBUG == 3 :
+        if res is None : 
+            print("No path")
+        else :
+            numberOfSuccesses += 1
+            #print("success@#$%@#$%@#", numberOfSuccesses)
+            #maze_visual(dim, maze, res[0])
+            #print(res[1])
+    """
 
-        print("A* Manhattan")
-        res = AStarM(maze)
-        print(tm.timeit(lambda: AStarM(maze), number = RUNS))
-        if DEBUG == 1 or DEBUG == 3 :
-            if res is None : 
-                print("No path")
-            else : 
-                maze_visual(dim, maze, res[0])
-                #print(res[1])
+    #print (eavg)
+    #density vs. shortest expected path
+    array = [0,.1,.2,.3,.4,.5,.6,.7,.8,.9]
+    plt.plot(array, eavg, 'x')
+    plt.plot(array, mavg, 'ro')
+    plt.ylabel('runtime')
+    plt.xlabel('p')
+    if DEBUG == 2 or DEBUG == 3:
+        plt.show()
 
-        print("BFS")
-        res = BFS(maze)
-        print(tm.timeit(lambda: BFS(maze), number = RUNS))
-        if DEBUG == 1 or DEBUG == 3 :
-            if res is None : 
-                print("No path")
-            else : 
-                maze_visual(dim, maze, res[0])
-                #print(res[1])
-        """
-        print("DFS")
-        res = DFS(maze)
-        print(tm.timeit(lambda: DFS(maze), number = RUNS))
-        if DEBUG == 1 or DEBUG == 3 :
-            if res is None : 
-                print("No path")
-            else :
-                numberOfSuccesses += 1
-                #print("success@#$%@#$%@#", numberOfSuccesses)
-                #maze_visual(dim, maze, res[0])
-                #print(res[1])
-        """
-        
-        
-        #density vs. shortest expected path
-        plt.plot([1,2,3,4], [1, 2, 7, 8], 'ro')
-        plt.ylabel('density')
-        plt.xlabel('shortest expected path')
-        if DEBUG == 2 or DEBUG == 3:
-            plt.show()
-        """
+    array = [0,.1,.2,.3,.4,.5,.6,.7,.8,.9]
+    plt.plot(array, ne, 'x')
+    plt.plot(array, nm, 'ro')
+    plt.ylabel('nodes expanded')
+    plt.xlabel('p')
+    if DEBUG == 2 or DEBUG == 3:
+        plt.show()
+    
+    
+    """
     print (numberOfSuccesses)
     #4)plot algorithm stats with graphs (add data here - to be completed)
     #density vs. solvability
@@ -159,6 +226,8 @@ def main():
     plt.xlabel('density')
     if DEBUG == 2 or DEBUG == 3 :
        plt.show()
+
+    """
     return
 
 if __name__ == "__main__":
