@@ -9,8 +9,9 @@ import timeit as tm
 import random
 import math
 import copy
+import numpy as np
 
-DEBUG = 1
+DEBUG = 0
 
 # function to generate a thinned/easier version of the original maze
 def thin_maze_gen(prob, maze1):
@@ -27,90 +28,6 @@ def thin_maze_gen(prob, maze1):
 
     return maze
 
-def BFS_A2B(maze1, start, end):
-    """Given the size and the maze itself, the target should be at position (size-1,size-1)
-    and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
-    Edit: I'll have to change this to incorporate class Cell later
-    Returns: a list of tuples if a valid path exists. Returns None otherwise """
-
-    size = len(maze1)
-
-    #make a deep copy of maze to use it without changing original values
-    maze = copy.deepcopy(maze1)
-    if maze[0][0].val == 1:
-        return None
-
-    root = Node(start, [], None)
-    queue = []
-    queue.append(root)
-
-    ret = []
-
-    #initialize counters for max fringe size, max nodes expanded
-    maxFringe = 0
-    maxNodes = 0
-
-    while len(queue) != 0:
-
-        #max fringe counter
-        maxFringe = max(maxFringe, len(queue))
-
-        node = queue.pop(0)
-
-        #check if node is the goal state 
-        if node.data == end:
-            while(node):
-                ret.append(node.data)
-                node = node.parent
-            return (ret, [len(ret), maxFringe, maxNodes])
-
-        #if node is not goal state, check up/down/left/right for unvisited children
-        data = node.data
-        row = data[0]
-        col = data[1]
-        
-        #check right
-        if col < size-1:
-            if(maze[row][col+1].val == 0):
-                #create a new node
-                rightNode = Node((row,col+1), [], node)
-                #enqueue
-                queue.append(rightNode)
-                #add new node to current node's children
-                node.children.append(rightNode)
-                #mark the child node as "visited"
-                maze[row][col+1].val = 2
-                #increment nodes expanded
-                maxNodes+=1
-
-        #check down
-        if row < size -1:
-            if(maze[row+1][col].val == 0):
-                downNode = Node((row+1, col), [], node)
-                queue.append(downNode)
-                node.children.append(downNode)
-                maze[row+1][col].val = 2
-                maxNodes+=1
-
-        #check up
-        if row > 0:
-            if(maze[row-1][col].val == 0):
-                upNode = Node((row-1, col), [], node)
-                queue.append(upNode)
-                node.children.append(upNode)
-                maze[row-1][col].val = 2
-                maxNodes+=1
-
-        #check left
-        if col > 0: 
-            if(maze[row][col-1].val == 0):
-                leftNode = Node((row, col-1), [], node)
-                queue.append(leftNode)
-                node.children.append(leftNode)
-                maze[row][col-1].val = 2
-                maxNodes+=1
-
-
 def valid_path(maze1, sol=[]):
     if sol == None:
         return False
@@ -125,66 +42,84 @@ def main():
     dim = int(input("Enter maze dimension: "))
     prob = float(input("Enter probability: "))
     # probability of unblocking cells
-    qprob = .02
+    qprob = .0
     # to keep track of all the nodes expanded in thinned maze
     nodes_exp = 0
     nodes_exp1 = 0
 
     #keep count of blocked cells in path of original maze for computing prob
     count = 0
+    stats = []
+    stats1 = []
+    values = []
 
-    # 1)run maze_gen
-    maze = maze_gen(dim, prob)
-    res = AStarE(maze)
-    # maze_visual(dim, maze)
+    while qprob <= 1 :
+        count = 0
+        nodes_exp = 0
+        nodes_exp1 = 0
 
-    # make sure there is path from start to goal
-    if res is not None:
+        # 1)run maze_gen
+        maze = maze_gen(dim, prob)
+        res = BFS(maze)
+        # maze_visual(dim, maze)
+
+        # make sure there is path from start to goal
+        if res is None:
+            #print ("no path")
+            continue
+
         # 2)generate a thin\easier version of original maze
         maze1 = thin_maze_gen(qprob, maze)
         # maze_visual(dim, maze1)
 
         # 3) solve thinned maze and return solution path
         res = AStarE(maze1)
-        print(tm.timeit(lambda: AStarE(maze1), number=RUNS))
         nodes_exp = nodes_exp + res[1][2]
+        stats.append(nodes_exp)# + count*1)
+        #print(tm.timeit(lambda: AStarE(maze1), number=50))
+        #print("total nodes expanded for thinned maze: ", nodes_exp)#+count*4)
+        #print("length of thinned maze path solution: ", res[1][0])
 
-        iter = 1
+        #collect data of original maze
+        res = AStarE(maze)
+        nodes_exp1 = nodes_exp1 + res[1][2]
+        stats1.append(nodes_exp1)
+        #print(tm.timeit(lambda: AStarE(maze), number=50))
+        #print("total nodes expanded for original: ", nodes_exp1)
+        #print("length of original maze path solution: ", res[1][0])
 
-        # 4) check if solution works on original, if not
-        # repeat process from (2) 
-        #while not valid_path(maze, res[0]):
-        #    maze1 = thin_maze_gen(qprob, maze)
-        #    res = BFS(maze1)
-        #    nodes_exp = nodes_exp + res[1][2]
-        #    iter = iter + 1
-       
+        #find all blocked cells in path of thinned maze solution
         for i in range(len(maze)):
             for j in range(len(maze)):
                 if maze[i][j].coord in res[0] and maze[i][j].val == 1 :
                     count = count+1
+        
+        values.append(qprob)
+        qprob += .05
 
-        print ("probability of having matching solutions: ", math.pow(qprob,
-            count))
-        print("total nodes expanded for thinned maze: ", nodes_exp)
-        print("number of iterations: ", iter)
-
-    if res is not None:
-        maze_visual(dim, maze1, res[0])
-        maze_visual(dim, maze, res[0])
+    #get stats for original maze
+    avg_node_exp = sum(stats)/len(stats)
+    avg_node_exp1 = sum(stats1)/len(stats1)
+    #print("probability of having matching solutions: ", math.pow(qprob, count))
+    #print("cost for computing thinned maze: ", nodes_exp)
+    #print("total nodes expanded for thinned maze: ", nodes_exp)#+count*4)
+    #print("length of thinned maze path solution: ", res[1][0])
+    #print("length of thinned maze path solution on original maze: ", res[1][0]+count*4)
+    #print("number of iterations: ", iter)
+    
+    #visual of thinned maze with solution
+    #maze_visual(dim, maze1, res[0])
+    #visual of original maze with thinned maze solution
+    #maze_visual(dim, maze, res[0])
 
    # 5) compare nodes expanded with original maze solution
-        res = AStarE(maze)
-        print(tm.timeit(lambda: AStarE(maze), number=RUNS))
-        maze_visual(dim, maze, res[0])
-        nodes_exp1 = nodes_exp1 + res[1][2]
-        print("total nodes expanded for original: ", nodes_exp1)
-    
+    #res = AStarE(maze)
+    #maze_visual(dim, maze, res[0])
+    #nodes_exp1 = nodes_exp1 + res[1][2]
+    #print("total nodes expanded for original: ", nodes_exp1)
+    #print("length of original maze path solution: ", res[1][0])
+    print(stats, stats1)    
    
-   #####Alternative option - didn't get to this yet
-    
-    
-
     ################# for potential use
     # 4)plot algorithm stats with graphs (add data here - to be completed)
     # density vs. solvability
@@ -195,15 +130,37 @@ def main():
     if DEBUG == 2 or DEBUG == 3:
         plt.show()
 
-    # density vs. shortest expected path
-    plt.plot([1, 2, 3, 4], [1, 2, 7, 8], 'ro')
-    plt.ylabel('density')
-    plt.xlabel('shortest expected path')
-    if DEBUG == 2 or DEBUG == 3:
-        plt.show()
+    avg = [avg_node_exp, avg_node_exp1]
+    #sampled time at 200ms intervals
+    #t = np.arange(3)
+    #red dashes, blue squares and green triangles
+    #plt.plot(t, t, 'r--', t, t**2, 'bs', t, t**3, 'g^')
+    #plt.show()
 
+    names = ['Thin A*', 'Reg A*']
+    #values = [0., .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.]
+	
+    plt.figure(1, figsize=(9, 3))
+	
+    plt.subplot(131)
+    plt.ylabel('Difficulty of solving maze (tot. nodes expanded)')
+    plt.xlabel('Prob. of simplifying maze')
+    plt.scatter(values, stats)
+    plt.scatter(values, stats1)
+    plt.legend(('Thin A*', 'A*'))
+    plt.subplot(132)
+    plt.ylabel('Avg. tot. node expansion')
+    plt.bar(names, [avg_node_exp, avg_node_exp1], width = 0.6, edgecolor =
+            'red', color = ['C0','orange'])
+    plt.subplot(133)
+    plt.ylabel('Difficulty of solving maze (tot. nodes expanded)')
+    plt.xlabel('Prob. of simplifying maze')
+    plt.plot(values, stats)
+    plt.plot(values, stats1)
+    plt.suptitle('Thinning A* Heuristic Stats')
+    plt.show()
+    
     return
-
 
 if __name__ == "__main__":
     main()
