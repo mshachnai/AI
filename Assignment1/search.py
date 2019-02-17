@@ -1,10 +1,11 @@
+#Search algorithms for solving generated mazes
 import copy
 import math
 
 class Node():
     def __init__(self, data, children, parent, dist = 0):
-        self.data = data # this is a tuple
-        self.children = children # this is a list of Nodes
+        self.data = data #this is a tuple
+        self.children = children #this is a list of Nodes
         self.parent = parent #this is a Node
         self.dist = dist #this is the distance already traveled
                         #is set to 0 for DFS and BFS, because it's only considered for A*
@@ -34,8 +35,7 @@ class Stack:
 def BFS(maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
-    Edit: I'll have to change this to incorporate class Cell later
-    Returns: a list of tuples if a valid path exists. Returns None otherwise """
+    Returns: a list of tuples if a valid path exists. Returns None otherwise"""
 
     size = len(maze1)
 
@@ -55,7 +55,6 @@ def BFS(maze1):
     maxNodes = 0
 
     while len(queue) != 0:
-
         #max fringe counter
         maxFringe = max(maxFringe, len(queue))
 
@@ -118,7 +117,6 @@ def BFS(maze1):
 def DFS(maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
-    Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
 
     size  = len(maze1)
@@ -141,7 +139,6 @@ def DFS(maze1):
     maxNodes = 0
 
     while (fringe.isEmpty() == False):
-
         #max fringe counter
         maxFringe = max(maxFringe, fringe.size())
        
@@ -162,10 +159,15 @@ def DFS(maze1):
         #check up
         if row > 0:
             if(maze[row-1][col].val == 0):
+                #create a new node
                 upNode = Node((row-1, col), [], node)
+                #enqueue
                 fringe.push(upNode)
+                #add new node to current node's children
                 node.children.append(upNode)
+                #mark the child node as "visited"
                 maze[row-1][col].val = 2
+                #increment nodes expanded
                 maxNodes+=1
         #check left
         if col > 0: 
@@ -178,17 +180,11 @@ def DFS(maze1):
         #check right
         if col < size-1:
             if(maze[row][col+1].val == 0):
-                #create a new node
                 rightNode = Node((row,col+1), [], node)
-                #enqueue
                 fringe.push(rightNode)
-                #add new node to current node's children
                 node.children.append(rightNode)
-                #mark the child node as "visited"
                 maze[row][col+1].val = 2
-                #increment nodes expanded
                 maxNodes+=1
-
         #check down
         if row < size -1:
             if(maze[row+1][col].val == 0):
@@ -201,7 +197,6 @@ def DFS(maze1):
 def AStarM(maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
-    Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
 
     size = len(maze1)
@@ -256,8 +251,6 @@ def AStarM(maze1):
                 maze[row][col + 1].val = 2
                 #increment nodes expanded
                 maxNodes+=1
-
-
         # check down
         if row < size - 1:
             if (maze[row + 1][col].val == 0):
@@ -294,7 +287,6 @@ def estTotalDistM(dist, row, col, size):
 def AStarE(maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
-    Edit: I'll have to change this to incorporate class Cell later
     Returns: a list of tuples if a valid path exists. Returns None otherwise """
 
     size = len(maze1)
@@ -348,8 +340,6 @@ def AStarE(maze1):
                 maze[row][col + 1].val = 2
                 #increment nodes expanded
                 maxNodes+=1
-
-
         # check down
         if row < size - 1:
             if (maze[row + 1][col].val == 0):
