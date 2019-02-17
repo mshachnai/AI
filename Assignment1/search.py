@@ -117,7 +117,7 @@ def BFS(maze1):
 def DFS(maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
-    Returns: a list of tuples if a valid path exists. Returns None otherwise """
+    Returns: a list of tuples if a valid path exists. Returns None otherwise"""
 
     size  = len(maze1)
 
@@ -197,7 +197,7 @@ def DFS(maze1):
 def AStarM(maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
-    Returns: a list of tuples if a valid path exists. Returns None otherwise """
+    Returns: a list of tuples if a valid path exists. Returns None otherwise"""
 
     size = len(maze1)
 
@@ -287,7 +287,7 @@ def estTotalDistM(dist, row, col, size):
 def AStarE(maze1):
     """Given the size and the maze itself, the target should be at position (size-1,size-1)
     and the start is at (0,0). The maze is represented as a list of lists with 0's and 1's
-    Returns: a list of tuples if a valid path exists. Returns None otherwise """
+    Returns: a list of tuples if a valid path exists. Returns None otherwise"""
 
     size = len(maze1)
 

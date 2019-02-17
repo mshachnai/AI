@@ -80,10 +80,6 @@ def maze_visual(dim, maze, sol = []):
     return
 
 
-def calculateProb(r, c, prob, dim):
-    return (prob/(dim-1)) * ((dim-1) - abs(r + c -(dim-1)))
-
-
 def main():
 
     #take in user input of maze dimension and blocked cell probability
