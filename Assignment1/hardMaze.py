@@ -43,7 +43,7 @@ def generateHardMaze(START_PROB, EDIT_PROB, DIM, MAX_LOOP_LEN, MAX_LOOP_LEN2, TR
             print("test1")
             sum1 = runTest(mazeTuple, editMaze1, SEARCH, METRIC, EDIT_PROB, PFUNC)
 
-            """
+            
             #test2: the one where we only 1->0
             print("test2")
             sum2 = runTest(mazeTuple, editMaze2, SEARCH, METRIC, EDIT_PROB, PFUNC)
@@ -51,12 +51,11 @@ def generateHardMaze(START_PROB, EDIT_PROB, DIM, MAX_LOOP_LEN, MAX_LOOP_LEN2, TR
             #test3: the one where we only 0->1
             print("test3")
             sum3 = runTest(mazeTuple, editMaze3, SEARCH, METRIC, EDIT_PROB, PFUNC)
-            """
+        
 
-            #maxSum = max(sum1, sum2, sum3)
+            maxSum = max(sum1, sum2, sum3)
 
             #find the maximum sum out of them 
-            maxSum = sum1
             #print("generating actual mazes")
             editMaze = editMaze1
             if maxSum == sum1:
