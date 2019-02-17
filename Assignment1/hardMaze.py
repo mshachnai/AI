@@ -1,6 +1,6 @@
 from maze_gen import maze_gen, maze_visual, Cell, calculateProb
 from search import BFS, DFS, AStarM, AStarE
-from random import random
+from random import random, sample
 from math import ceil, floor
 from copy import deepcopy
 import os
@@ -76,7 +76,7 @@ def generateHardMaze(START_PROB, EDIT_PROB, DIM, MAX_LOOP_LEN, MAX_LOOP_LEN2, TR
             while numMazes < 2:
                 newMaze = editMaze(mazeTuple[0], EDIT_PROB, PFUNC)
                 newMazeEval = mazeEval(newMaze, SEARCH, METRIC)
-                if newMazeEval and newMazeEval > standard:
+                if newMazeEval and newMazeEval >= standard:
                     newMazes.append((newMaze, newMazeEval))
                     numMazes+=1
                 loopCounter+=1
@@ -99,12 +99,23 @@ def generateHardMaze(START_PROB, EDIT_PROB, DIM, MAX_LOOP_LEN, MAX_LOOP_LEN2, TR
 
         #print stats of hardest maze, currently
         print("curr hardest stats: ",sortedMazes[-1][1])
+        #maze_visual(len(sortedMazes[0]), sortedMazes[0])
         FILE.write(str(i) + " " + str(sortedMazes[-1][1]) + "\n")
+
+        for m in sortedMazes[-1][0]:
+            for n in m:
+                FILE.write("%s" % n.val)
+            FILE.write("\n")
+
         for m in sortedMazes:
             print(m[1], end=" ")
 
         #cull the poorly performing mazes
-        mazeList = sortedMazes[0:worstLen] + sortedMazes[(-1 * bestLen):]
+        #mazeList = sortedMazes[0:worstLen] + sortedMazes[(-1 * bestLen):]
+        worstsList = sortedMazes[0: len(sortedMazes) - bestLen]
+        worstSelect = sample(worstsList, worstLen)
+        
+        mazeList = sortedMazes[(-1 * bestLen):] + worstSelect
         print("loop has run " + str(i) + " times!")
 
     #mazes are sorted from (worst -> best)
@@ -294,14 +305,15 @@ if __name__ == "__main__":
     fname = "foo"
     File = open(fname, "w")
 
+    SEARCH = "astarm"
 
-
-    maze = generateHardMaze(0.25, 0.25, 30, 800, 1600, 30, "dfs", 0, False, File)
+    maze = generateHardMaze(0.25, 0.10, 20, 800, 1600, 30, SEARCH, 1, False, File)
     if SEARCH == "bfs":
         res = BFS(maze)
     elif SEARCH == "dfs":
         res = DFS(maze) #make this main into an actual function that takes input for search type & metric
-    
+    elif SEARCH == "astarm":
+        res = AStarM(maze)
     print("solution length: " + str(res[1][0]))
     print("max fringe: " + str(res[1][1]))
     print("max nodes: " + str(res[1][2]))
