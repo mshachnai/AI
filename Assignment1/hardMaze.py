@@ -3,18 +3,9 @@ from search import BFS, DFS, AStarM, AStarE
 from random import random
 from math import ceil, floor
 from copy import deepcopy
+import os
 
-START_PROB = 0.3
-EDIT_PROB = 0.1
-DIM = 15
-MAX_LOOP_LEN = 800  #switch editMaze to "both"
-MAX_LOOP_LEN2 = 1600 #lower maze quality standards for acceptance
-TREE_DEPTH = 20
-SEARCH = "bfs"
-METRIC = 0
-PFUNC=True
-
-def generateHardMaze():
+def generateHardMaze(START_PROB, EDIT_PROB, DIM, MAX_LOOP_LEN, MAX_LOOP_LEN2, TREE_DEPTH, SEARCH, METRIC, PFUNC, FILE):
     #create a random maze 
     #do random starting probabilities until we find a good one
     
@@ -50,19 +41,22 @@ def generateHardMaze():
 
             #test to see which editMaze algorithm would work the best
             print("test1")
-            sum1 = runTest(mazeTuple, editMaze1)
+            sum1 = runTest(mazeTuple, editMaze1, SEARCH, METRIC, EDIT_PROB, PFUNC)
 
+            """
             #test2: the one where we only 1->0
             print("test2")
-            sum2 = runTest(mazeTuple, editMaze2)
+            sum2 = runTest(mazeTuple, editMaze2, SEARCH, METRIC, EDIT_PROB, PFUNC)
 
             #test3: the one where we only 0->1
             print("test3")
-            sum3 = runTest(mazeTuple, editMaze3)
+            sum3 = runTest(mazeTuple, editMaze3, SEARCH, METRIC, EDIT_PROB, PFUNC)
+            """
 
-            maxSum = max(sum1, sum2, sum3)
+            #maxSum = max(sum1, sum2, sum3)
 
             #find the maximum sum out of them 
+            maxSum = sum1
             #print("generating actual mazes")
             editMaze = editMaze1
             if maxSum == sum1:
@@ -80,8 +74,8 @@ def generateHardMaze():
             loopCounter = 0
             numMazes = 0 #want to generate 4 "child" mazes for every maze
             standard = mazeTuple[1] #mazes must exceed this number before being put into queue
-            while numMazes < 4:
-                newMaze = editMaze(mazeTuple[0])
+            while numMazes < 2:
+                newMaze = editMaze(mazeTuple[0], EDIT_PROB, PFUNC)
                 newMazeEval = mazeEval(newMaze, SEARCH, METRIC)
                 if newMazeEval and newMazeEval > standard:
                     newMazes.append((newMaze, newMazeEval))
@@ -95,6 +89,7 @@ def generateHardMaze():
                     editMaze = editMaze1
                 if loopCounter > MAX_LOOP_LEN2:
                     standard -=1 #gradually lower the standard for accepting maze
+                    editMaze = editMaze2
 
             newMazes.append(mazeTuple) #append the old maze, just to be safe
                     
@@ -105,6 +100,7 @@ def generateHardMaze():
 
         #print stats of hardest maze, currently
         print("curr hardest stats: ",sortedMazes[-1][1])
+        FILE.write(str(i) + " " + str(sortedMazes[-1][1]) + "\n")
         for m in sortedMazes:
             print(m[1], end=" ")
 
@@ -118,11 +114,11 @@ def generateHardMaze():
     return finalMazes[-1][0]
 
 
-def runTest(mazeTuple, editMaze):
+def runTest(mazeTuple, editMaze, SEARCH, METRIC, EDIT_PROB, PFUNC):
     Sum= 0
     counter = 0
-    while counter < 4:
-        newMaze = editMaze(mazeTuple[0])
+    while counter < 2:
+        newMaze = editMaze(mazeTuple[0], EDIT_PROB, PFUNC)
         val = mazeEval(newMaze, SEARCH, METRIC)
         if val:
             Sum+=val
@@ -172,7 +168,7 @@ def mazeEval(maze, search, metric):
         return None
 
 
-def editMaze1(mazeOrig):
+def editMaze1(mazeOrig, EDIT_PROB, PFUNC):
     """
     returns a slightly modified maze ("randomly" flips 0's and 1's)
     the probability of 0 -> 1 is 2x the probability of 1 -> 0
@@ -215,7 +211,7 @@ def editMaze1(mazeOrig):
 
     return maze
 
-def editMaze2(mazeOrig):
+def editMaze2(mazeOrig, EDIT_PROB, PFUNC):
     """
     returns a slightly modified maze (only flips 1's to 0)
     """
@@ -245,7 +241,7 @@ def editMaze2(mazeOrig):
     return maze
 
 
-def editMaze3(mazeOrig):
+def editMaze3(mazeOrig, EDIT_PROB, PFUNC):
     """
     returns a slightly modified maze (only flips 0's to 1)
     """
@@ -273,10 +269,35 @@ def editMaze3(mazeOrig):
 
     return maze
 
+def testLoopz():
+    #what is this function doing?
+    #for each dim output (loop#, difficultyMeasure) into a file -> graphs/limit<dim>
+    #our goal is to eventually plot al of these. 
+    
+    if not os.path.exists("graphs"):
+        os.makedirs("graphs")
+
+
+    for i in range(8, 11):
+        #generate filename
+        fname = "graphs/limit" + str(i) + ".3"
+        File = open(fname, "w")
+
+        maze = generateHardMaze(0.25, 0.25, i, 800, 1600, 30, "bfs", 0, False, File)
+        res = BFS(maze)
+        maze_visual(len(maze), maze, res[0])
 
 
 if __name__ == "__main__":
-    maze = generateHardMaze()
+#    testLoopz()
+
+
+    fname = "foo"
+    File = open(fname, "w")
+
+
+
+    maze = generateHardMaze(0.25, 0.25, 30, 800, 1600, 30, "dfs", 0, False, File)
     if SEARCH == "bfs":
         res = BFS(maze)
     elif SEARCH == "dfs":
@@ -288,6 +309,7 @@ if __name__ == "__main__":
 
     maze_visual(len(maze),maze, res[0]) #change this function to not take in "dim" as parameter
 
+    
 
 
 
