@@ -85,7 +85,6 @@ def BFS(maze1):
                 maze[row][col+1].val = 2
                 #increment nodes expanded
                 maxNodes+=1
-
         #check down
         if row < size -1:
             if(maze[row+1][col].val == 0):
@@ -94,7 +93,6 @@ def BFS(maze1):
                 node.children.append(downNode)
                 maze[row+1][col].val = 2
                 maxNodes+=1
-
         #check up
         if row > 0:
             if(maze[row-1][col].val == 0):
@@ -103,7 +101,6 @@ def BFS(maze1):
                 node.children.append(upNode)
                 maze[row-1][col].val = 2
                 maxNodes+=1
-
         #check left
         if col > 0: 
             if(maze[row][col-1].val == 0):
@@ -223,7 +220,7 @@ def AStarM(maze1):
         
         node = queue.pop(0)
 
-        # check if node is the goal state
+        #check if node is the goal state
         if node.data == (size - 1, size - 1):
             while (node):
                 ret.append(node.data)
@@ -231,27 +228,27 @@ def AStarM(maze1):
             return (ret, [len(ret), maxFringe, maxNodes])
 
 
-        # if node is not goal state, check up/down/left/right for unvisited children
+        #if node is not goal state, check up/down/left/right for unvisited children
         data = node.data
         row = data[0]
         col = data[1]
         dist = node.dist
 
-        # check right
+        #check right
         if col < size - 1:
             if (maze[row][col + 1].val == 0):
-                # create a new node
+                #create a new node
                 rightNode = Node((row, col + 1), [], node, dist + 1)
-                # add node by priority
+                #add node by priority
                 estDist = estTotalDistM(dist + 1, row, col + 1, size)
                 queue = insertNodeByPriorityM(queue, rightNode, estDist, size)
-                # add new node to current node's children
+                #add new node to current node's children
                 node.children.append(rightNode)
-                # mark the child node as "visited"
+                #mark the child node as "visited"
                 maze[row][col + 1].val = 2
                 #increment nodes expanded
                 maxNodes+=1
-        # check down
+        #check down
         if row < size - 1:
             if (maze[row + 1][col].val == 0):
                 downNode = Node((row + 1, col), [], node, dist + 1)
@@ -260,7 +257,7 @@ def AStarM(maze1):
                 node.children.append(downNode)
                 maze[row + 1][col].val = 2
                 maxNodes+=1
-        # check up
+        #check up
         if row > 0:
             if (maze[row - 1][col].val == 0):
                 upNode = Node((row - 1, col), [], node, dist + 1)
@@ -269,7 +266,7 @@ def AStarM(maze1):
                 node.children.append(upNode)
                 maze[row - 1][col].val = 2
                 maxNodes+=1
-        # check left
+        #check left
         if col > 0:
             if (maze[row][col - 1].val == 0):
                 leftNode = Node((row, col - 1), [], node, dist + 1)
@@ -313,34 +310,34 @@ def AStarE(maze1):
      
         node = queue.pop(0)
 
-        # check if node is the goal state
+        #check if node is the goal state
         if node.data == (size - 1, size - 1):
             while (node):
                 ret.append(node.data)
                 node = node.parent
             return (ret, [len(ret), maxFringe, maxNodes])
 
-        # if node is not goal state, check up/down/left/right for unvisited children
+        #if node is not goal state, check up/down/left/right for unvisited children
         data = node.data
         row = data[0]
         col = data[1]
         dist = node.dist
 
-        # check right
+        #check right
         if col < size - 1:
             if (maze[row][col + 1].val == 0):
-                # create a new node
+                #create a new node
                 rightNode = Node((row, col + 1), [], node, dist + 1)
-                # add node by priority
+                #add node by priority
                 estDist = estTotalDistE(dist + 1, row, col + 1, size)
                 queue = insertNodeByPriorityE(queue, rightNode, estDist, size)
-                # add new node to current node's children
+                #add new node to current node's children
                 node.children.append(rightNode)
-                # mark the child node as "visited"
+                #mark the child node as "visited"
                 maze[row][col + 1].val = 2
                 #increment nodes expanded
                 maxNodes+=1
-        # check down
+        #check down
         if row < size - 1:
             if (maze[row + 1][col].val == 0):
                 downNode = Node((row + 1, col), [], node, dist + 1)
@@ -349,7 +346,7 @@ def AStarE(maze1):
                 node.children.append(downNode)
                 maze[row + 1][col].val = 2
                 maxNodes+=1
-        # check up
+        #check up
         if row > 0:
             if (maze[row - 1][col].val == 0):
                 upNode = Node((row - 1, col), [], node, dist + 1)
@@ -358,7 +355,7 @@ def AStarE(maze1):
                 node.children.append(upNode)
                 maze[row - 1][col].val = 2
                 maxNodes+=1
-        # check left
+        #check left
         if col > 0:
             if (maze[row][col - 1].val == 0):
                 leftNode = Node((row, col - 1), [], node, dist + 1)
