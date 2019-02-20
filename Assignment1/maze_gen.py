@@ -45,7 +45,6 @@ def maze_gen(dim, prob):
     return maze
 
 #function to generate a visual of the maze and its solution if given
-######need to work on showing actual path taken
 def maze_visual(dim, maze, sol = []):
 
     #initialize visual window and create maze layout using buttons
@@ -102,8 +101,6 @@ def main():
         else : 
             maze_visual(dim, maze, res[0])
 
-        #print(res[1])
-
     print("A* Manhattan")
     res = AStarM(maze)
     print(tm.timeit(lambda: AStarM(maze), number = RUNS))
@@ -112,7 +109,6 @@ def main():
             print("No path")
         else : 
             maze_visual(dim, maze, res[0])
-            #print(res[1])
 
     print("BFS")
     res = BFS(maze)
@@ -122,7 +118,6 @@ def main():
             print("No path")
         else : 
             maze_visual(dim, maze, res[0])
-            #print(res[1])
 
     print("DFS")
     res = DFS(maze)
@@ -132,9 +127,8 @@ def main():
             print("No path")
         else : 
             maze_visual(dim, maze, res[0])
-            #print(res[1])
 
-    #4)plot algorithm stats with graphs (add data here - to be completed)
+    #4)plot algorithm stats with graphs
     #density vs. solvability
     array = [1,2,3,4]
     plt.plot(array, [1, 2, 3, 4], 'ro')
