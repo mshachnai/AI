@@ -1,5 +1,4 @@
-Minesweeper -- INTRO TO AI 198:520 -- Rutgers University -- M.Shachnai
-from search import DFS, BFS, AStarE, AStarM
+#Minesweeper -- INTRO TO AI 198:520 -- Rutgers University -- M.Shachnai
 import matplotlib.pyplot as plt
 from tkinter import *
 from tkinter import ttk
@@ -9,72 +8,110 @@ import copy
 
 #DEBUG is used for turning visuals on/off:
 #0: will not show any visuals
-#1: will show maze visuals
+#1: will show grid visuals
 #2: will show plotting graphs
 #3: will show all visuals
 DEBUG = 3 
 RUNS = 1 #number of times each algorithm is run for timing
 
-#maze generator will be formed using a 2d array of struct named cell
+#minesweeper will be formed using a 2d array of struct named cell
 class Cell:
     #instance variables unique to each instance (with default arguments)
-    def __init__(self, val = 0, heuri = 0, coord = 0): 
-        self.val = val     #value to denote open/blocked cell
+    def __init__(self, val = 0, heuri = 0, coord = (0,0), bomb = 0): 
+        self.val = val     #value to denote nearby bombs
+        self.bomb = bomb     #value to denote if bomb/clear
         self.heuri = heuri #heuristic value 
         self.coord = coord #this is touple to indicate cell coordinates
     
-    
-#function to generate maze - takes in dimension of maze, probability of blocked cell, and 2d array
-def maze_gen(dim, prob):
-    maze = []
+#function to add values to each cell according num of adjacent mines
+def cell_val(dim, grid = [], X = 0, Y = 0, depth = 0):
+    #base cases
+    #check if depth search reached (this can vary if needed)
+    if depth == 2:
+        #print("depth = 2")
+        return 0
+    #check if X/Y coordinates are out of range 
+    elif X < 0 or X >= dim or Y < 0 or Y >= dim: 
+        #depth += 1
+        #print("out of range")
+        return 0
+    elif grid[X][Y].bomb == 1:
+        #print("this is bomb coordinat", X, Y)
+        #depth += 1
+        return 1
+        
+    depth += 1
+    return 0 + cell_val(dim, grid, X-1, Y-1, depth) + cell_val(dim, grid, X-1,Y,
+            depth) + cell_val(dim, grid, X-1, Y+1, depth) + cell_val(dim, grid, X, Y-1, depth) + cell_val(dim, grid, X, Y+1, depth ) + cell_val(dim, grid, X+1, Y-1, depth ) + cell_val(dim, grid, X+1, Y, depth ) + cell_val(dim, grid, X+1, Y+1, depth )
 
+
+#function to generate minesweeper - takes in dimension of grid, probability of blocked cell, and 2d array
+def mine_gen(dim, num_mines):
+    grid = []
+    count = 0 #number of mines
     random.seed()
+
+    #create 2d grid
     for i in range(0,dim):
-        maze.append([])
-    
-    for i in range(0,dim):
+        grid.append([])
         for j in range(0,dim):
-            rand = random.random()  #used for generating a value between 0-1
-            if rand <= prob and (i != 0 or j != 0) and (i != dim-1 or j !=
-                    dim-1) :
-                maze[i].append(Cell(val = 1, coord = (i,j))) #blocked cell
-                #print(maze[i][j].coord)     #coordinates of blocked cells
-            else : 
-                maze[i].append(Cell(val = 0, coord = (i,j))) #open cell
-                #print(maze[i][j].coord)     #coordinates of open cells cells
-    return maze
+            grid[i].append(Cell(coord = (i,j))) 
 
-#function to generate a visual of the maze and its solution if given
-def maze_visual(dim, maze, sol = []):
+    #add bombs to random coordinates according to num of mines inputted
+    while count != num_mines : 
+        X = random.randint(0,dim-1)  #random X coordinate
+        Y = random.randint(0,dim-1)  #random Y coordinate
+        
+        #assign bombs randomly until number of bombs required is reached
+        if grid[X][Y].bomb == 1 :  
+            continue
+        else :
+            grid[X][Y].bomb = 1 
+        
+        #count number of mines placed
+        count += 1
 
-    #initialize visual window and create maze layout using buttons
+    for i in range(dim):
+        for j in range(dim):
+            grid[i][j].val = cell_val(dim, grid, X = i, Y = j)
+    
+    return grid
+
+#function to generate a visual of the grid and its solution if given
+def grid_visual(dim, grid, sol = []):
+
+    #initialize visual window and create grid layout using buttons
     root = Tk()
     root.title('Maze Runner')
 
-    for r in range(dim): #width of maze
-        for c in range(dim): #height of maze
-            #print(r,c, sol[c-1])
+    for r in range(dim): #width of grid
+        for c in range(dim): #height of grid
 
-            #top left cell of maze will be named 'S' - start
-            if r == 0 and c == 0 :  
-                button1 = Button(root, text = "S", relief = SOLID, borderwidth = 1, bg = "light blue", height = 1, width = 1 ).grid(row=r,column=c)
+            #If cell contains bomb, display it
+            if grid[r][c].bomb == 1:
+                button1 = Button(root, text = "X", relief = SOLID, borderwidth =
+                        1, bg = "red", height = 1, width = 1 ).grid(row=r,column=c)
 
-            #bottom right cell of maze will be named 'G' - goal
+                """
+            #bottom right cell of grid will be named 'G' - goal
             elif r == dim-1 and c == dim-1 :  
                 button2 = Button(root, text = "G", command = root.destroy, relief = SOLID, borderwidth = 1, bg = "light blue", width = 1 ).grid(row=r,column=c)
 
             #if cell value == 1, this is a blocked cell
-            elif maze[r][c].val == 1:
+            elif grid[r][c].val == 1:
                 button3 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, bg = "black", width = 1).grid(row=r,column=c)
                         
-            #mark path on the maze visual by checking the cell coordinate is
+            #mark path on the grid visual by checking the cell coordinate is
             #listed in the solution array, if it is - mark the specific cell
             elif (r,c) in sol:
-                button4 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, bg = "yellow", width = 1).grid(row=r,column=c)
+                button4 = Button(root, relief = SOLID, state = DISABLED,
+                borderwidth = 1, bg = "yellow", width =
+                1).grid(row=r,column=c)"""
                         
-            #for all other cases, create white cells
+            #for all other cases, create blank cells
             else:
-                button5 = Button(root, relief = SOLID, state = DISABLED, borderwidth = 1, bg = "white", width = 1).grid(row=r,column=c)
+                button5 = Button(root, relief = SOLID, text = grid[r][c].val,
+                        borderwidth = 1, bg = "light blue", width = 1).grid(row=r,column=c)
 
     root.mainloop()
     return
@@ -82,51 +119,52 @@ def maze_visual(dim, maze, sol = []):
 
 def main():
 
-    #take in user input of maze dimension and blocked cell probability
-    dim = int(input("Enter maze dimension: "))
-    prob = float(input("Enter probability: "))
+    #take in user input of grid dimension and blocked cell probability
+    dim = int(input("Enter grid dimension: "))
+    num_mines = int(input("Enter number of mines: "))
 
-    #1)run maze_gen
-    maze = maze_gen(dim, prob)
+    #1)run mine_gen
+    grid = mine_gen(dim, num_mines)
+    grid_visual(dim, grid)
 
-    #2)run search algorithm and generate maze visual
-    #if there is a path - show it with maze_visual
+    #2)run search algorithm and generate grid visual
+    #if there is a path - show it with grid_visual
     #otherwise print("No path")
-    print("A* Euclidean")
-    res = AStarE(maze)
-    print(tm.timeit(lambda: AStarE(maze), number = RUNS))
+    """print("A* Euclidean")
+    res = AStarE(grid)
+    print(tm.timeit(lambda: AStarE(grid), number = RUNS))
     if DEBUG == 1 or DEBUG == 3 :
         if res is None : 
             print("No path")
         else : 
-            maze_visual(dim, maze, res[0])
+            grid_visual(dim, grid, res[0])
 
     print("A* Manhattan")
-    res = AStarM(maze)
-    print(tm.timeit(lambda: AStarM(maze), number = RUNS))
+    res = AStarM(grid)
+    print(tm.timeit(lambda: AStarM(grid), number = RUNS))
     if DEBUG == 1 or DEBUG == 3 :
         if res is None : 
             print("No path")
         else : 
-            maze_visual(dim, maze, res[0])
+            grid_visual(dim, grid, res[0])
 
     print("BFS")
-    res = BFS(maze)
-    print(tm.timeit(lambda: BFS(maze), number = RUNS))
+    res = BFS(grid)
+    print(tm.timeit(lambda: BFS(grid), number = RUNS))
     if DEBUG == 1 or DEBUG == 3 :
         if res is None : 
             print("No path")
         else : 
-            maze_visual(dim, maze, res[0])
+            grid_visual(dim, grid, res[0])
 
     print("DFS")
-    res = DFS(maze)
-    print(tm.timeit(lambda: DFS(maze), number = RUNS))
+    res = DFS(grid)
+    print(tm.timeit(lambda: DFS(grid), number = RUNS))
     if DEBUG == 1 or DEBUG == 3 :
         if res is None : 
             print("No path")
         else : 
-            maze_visual(dim, maze, res[0])
+            grid_visual(dim, grid, res[0])
 
     #4)plot algorithm stats with graphs
     #density vs. solvability
@@ -142,7 +180,7 @@ def main():
     plt.ylabel('density')
     plt.xlabel('shortest expected path')
     if DEBUG == 2 or DEBUG == 3:
-        plt.show()
+        plt.show()"""
 
     return
 
