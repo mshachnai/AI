@@ -1,18 +1,20 @@
 #Minesweeper -- INTRO TO AI 198:520 -- Rutgers University -- M.Shachnai
 import matplotlib.pyplot as plt
+import tkinter as tk
 from tkinter import *
 from tkinter import ttk
 import timeit as tm
 import random
 import copy
 
+######for later use
 #DEBUG is used for turning visuals on/off: (not complete yet)
 #0: will not show any visuals
 #1: will show grid visuals
 #2: will show plotting graphs
 #3: will show all visuals
-DEBUG = 3 
-RUNS = 1 #number of times each algorithm is run for timing
+#DEBUG = 3 
+#RUNS = 1 #number of times each algorithm is run for timing
 
 #minesweeper will be formed using a 2d array of struct named cell
 class Cell:
@@ -57,14 +59,14 @@ def mine_gen(dim, num_mines):
 
     #add bombs to random coordinates according to num of mines inputted
     while count != num_mines : 
-        X = random.randint(0,dim-1)  #random X coordinate
-        Y = random.randint(0,dim-1)  #random Y coordinate
+        x = random.randint(0,dim-1)  #random X coordinate
+        y = random.randint(0,dim-1)  #random Y coordinate
         
         #assign bombs randomly until number of bombs required is reached
-        if grid[X][Y].bomb == 1 :  
+        if grid[x][y].bomb == 1 :  
             continue
         else :
-            grid[X][Y].bomb = 1 
+            grid[x][y].bomb = 1 
         
         #count number of mines placed
         count += 1
@@ -77,36 +79,62 @@ def mine_gen(dim, num_mines):
     return grid
 
 
-
 #function to generate a visual of the grid and its solution if given
 def grid_visual(dim, grid, sol = []):
 
     #initialize visual window and create grid layout using buttons
-    root = Tk()
+    root = tk.Tk()
     root.title('Minesweeper')
-  
+    
+    #function to find all bordering zeroes and uncovering them
+    def zero_bfs(cell,q):
+        for i in range(-1,2):
+            for j in range(-1,2):
+                #print(cell.coord[0]+i,cell.coord[1]+j)
+                if cell.coord[0]+i < 0 or cell.coord[0]+i >= dim or cell.coord[1]+j < 0 or cell.coord[1]+j >=dim:
+                    #print("skip")
+                    continue
+                else:
+                    q.append(grid[cell.coord[0]+i][cell.coord[1]+j])
+
+
     #clickable function for minesweeper
-    def mouse_press(n, row, col):
-        #print("hello")
-        if grid[row][col].bomb == 1:
-            button[n].config(bg = "red", command = 0, relief = SUNKEN, text =
-                    "X", state = DISABLED)    
-        else: 
-            button[n].config(relief = SUNKEN, command = 0, text =
-                    grid[row][col].val, state = DISABLED, disabledforeground =
-                    "blue")    
+    def mouse_press(row, col):
+        #if bomb - show it
+        if grid[row][col].bomb == 1: 
+            button[row][col].config(bg = "red", disabledforeground = "black", command = 0, relief = SUNKEN, text = "X", state = DISABLED)
+        #if cell value != 0 - show it
+        elif grid[row][col].val > 0: 
+            button[row][col].config(relief = SUNKEN, text = grid[row][col].val, state = DISABLED, disabledforeground = "blue")
+        #if cell value = 0 - show it and uncover all bordering 0s
+        else:
+            q = []
+            q.append(grid[row][col])
+ 
+            while len(q) != 0:
+                cell = q.pop()
+                #print(button[cell.coord[0]][cell.coord[1]])
+                #print(cell.coord[0],cell.coord[1])
+                if button[cell.coord[0]][cell.coord[1]]['relief'] == "sunken":
+                    #print(button[cell.coord[0]][cell.coord[1]]['relief'] == 'sunken')
+                    pass
+                elif cell.val == 0:
+                    button[cell.coord[0]][cell.coord[1]].config(relief = SUNKEN, text = cell.val, state = DISABLED, disabledforeground = "blue")
+                    #run function to uncover all bordering 0s
+                    zero_bfs(cell,q)
+                else:
+                    button[cell.coord[0]][cell.coord[1]].config(relief = SUNKEN, text = cell.val, state = DISABLED, disabledforeground = "blue")
+        
     button = []
     count = 0
 
     for r in range(dim): #width of grid
+        button.append([])
         for c in range(dim): #height of grid
 
-            #create blank clickable cells
-            #else:
-            button.append(Button(root, relief = SOLID, text = "",
-                    command = lambda n = count, row = r, col = c :
-                    mouse_press(n, row, col), borderwidth = 1, bg = "light grey", width = 1))
-            button[-1].grid(row=r,column=c)
+            #create blank clickable cells (functionality is in each cell)
+            button[r].append(tk.Button(root, relief = SOLID, text = "", command = lambda row = r, col = c : mouse_press(row, col), borderwidth = 1, bg = "light grey", width = 1))
+            button[r][-1].grid(row=r,column=c)
     
             count += 1
     root.mainloop()
