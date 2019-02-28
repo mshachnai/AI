@@ -80,12 +80,11 @@ def mine_gen(dim, num_mines):
 
 
 #function to generate a visual of the grid and its solution if given
-def grid_visual(dim, grid, sol = []):
+def grid_visual(dim, grid, score):
 
     #initialize visual window and create grid layout using buttons
     root = tk.Tk()
     root.title('Minesweeper')
-    
     #function to find all bordering zeroes and uncovering them
     def zero_bfs(cell,q):
         for i in range(-1,2):
@@ -97,12 +96,13 @@ def grid_visual(dim, grid, sol = []):
                 else:
                     q.append(grid[cell.coord[0]+i][cell.coord[1]+j])
 
-
     #clickable function for minesweeper
     def mouse_press(row, col):
         #if bomb - show it
         if grid[row][col].bomb == 1: 
             button[row][col].config(bg = "red", disabledforeground = "black", command = 0, relief = SUNKEN, text = "X", state = DISABLED)
+            #keep track of number of bombs detonated
+            score[0] += 1
         #if cell value != 0 - show it
         elif grid[row][col].val > 0: 
             button[row][col].config(relief = SUNKEN, text = grid[row][col].val, state = DISABLED, disabledforeground = "blue")
@@ -126,17 +126,20 @@ def grid_visual(dim, grid, sol = []):
                     button[cell.coord[0]][cell.coord[1]].config(relief = SUNKEN, text = cell.val, state = DISABLED, disabledforeground = "blue")
         
     button = []
-    count = 0
-
+    
+    #create a grid of buttons with functionality
     for r in range(dim): #width of grid
         button.append([])
         for c in range(dim): #height of grid
 
             #create blank clickable cells (functionality is in each cell)
-            button[r].append(tk.Button(root, relief = SOLID, text = "", command = lambda row = r, col = c : mouse_press(row, col), borderwidth = 1, bg = "light grey", width = 1))
+            button[r].append(tk.Button(root, relief = SOLID, text = "", command =
+                lambda row = r, col = c: mouse_press(row, col), borderwidth = 1, bg = "light grey", width = 1))
             button[r][-1].grid(row=r,column=c)
     
-            count += 1
+    ####agent will invoke buttons as it goes along (need to organize this)
+    button[0][0].invoke() #this is an example of invoking a button
+    ####
     root.mainloop()
     return
 
@@ -146,11 +149,13 @@ def main():
     #take in user input of grid dimension and blocked cell probability
     dim = int(input("Enter grid dimension: "))
     num_mines = int(input("Enter number of mines: "))
+    score = [0]
 
     #1)run mine_gen
     grid = mine_gen(dim, num_mines)
-    grid_visual(dim, grid)
-
+    grid_visual(dim, grid, score)
+    print("Number of bombs detonated:", score[0])
+    print("Total number of bombs:", num_mines)
     #2)run agent to solve the maze (collect, update KB, take action) 
 
 
