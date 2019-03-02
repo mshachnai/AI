@@ -6,6 +6,7 @@ from tkinter import ttk
 import timeit as tm
 import random
 import copy
+import solver_minesweeper as sv
 
 ######for later use
 #DEBUG is used for turning visuals on/off: (not complete yet)
@@ -19,30 +20,31 @@ import copy
 #minesweeper will be formed using a 2d array of struct named cell
 class Cell:
     #instance variables unique to each instance (with default arguments)
-    def __init__(self, val = 0, coord = (0,0), bomb = 0): 
+    def __init__(self, val = -1, coord = (0,0), bomb = 0, visited = 0): 
         self.val = val     #value to denote nearby bombs
         self.bomb = bomb     #value to denote if bomb/clear
         self.coord = coord #this is touple to indicate cell coordinates
+        self.visited = visited #value to indicate if cell has been visited
+        self.prob = -1 #value to indicate probability of being a bomb
     
 #function to add values to each cell according num of adjacent mines
-def cell_val(dim, grid = [], X = 0, Y = 0, depth = 0):
+def cell_val(dim, grid = [], x = 0, y = 0, depth = 0):
     #base cases
     #check if depth search reached (this can vary if needed)
     if depth == 2:
         #print("depth = 2")
         return 0
     #check if X/Y coordinates are out of range 
-    elif X < 0 or X >= dim or Y < 0 or Y >= dim: 
+    elif x < 0 or x >= dim or y < 0 or y >= dim: 
         #print("out of range")
         return 0
     #check if coordinate is a bomb and increment accordingly
-    elif grid[X][Y].bomb == 1:
+    elif grid[x][y].bomb == 1:
         #print("this is bomb coordinate", X, Y)
         return 1
         
     depth += 1
-    return 0 + cell_val(dim, grid, X-1, Y-1, depth) + cell_val(dim, grid, X-1,Y,
-            depth) + cell_val(dim, grid, X-1, Y+1, depth) + cell_val(dim, grid, X, Y-1, depth) + cell_val(dim, grid, X, Y+1, depth ) + cell_val(dim, grid, X+1, Y-1, depth ) + cell_val(dim, grid, X+1, Y, depth ) + cell_val(dim, grid, X+1, Y+1, depth )
+    return 0 + cell_val(dim, grid, x-1, y-1, depth) + cell_val(dim, grid, x-1,y,     depth) + cell_val(dim, grid, x-1, y+1, depth) + cell_val(dim, grid, x, y-1, depth) + cell_val(dim, grid, x, y+1, depth ) + cell_val(dim, grid, x+1, y-1, depth ) + cell_val(dim, grid, x+1, y, depth ) + cell_val(dim, grid, x+1, y+1, depth )
 
 
 #function to generate minesweeper - takes in dimension of grid, probability of blocked cell, and 2d array
@@ -74,9 +76,10 @@ def mine_gen(dim, num_mines):
     #add cell value based on adjacent bombs
     for i in range(dim):
         for j in range(dim):
-            grid[i][j].val = cell_val(dim, grid, X = i, Y = j)
+            grid[i][j].val = cell_val(dim, grid, x = i, y = j)
     
     return grid
+
 
 
 #function to generate a visual of the grid and its solution if given
@@ -86,7 +89,7 @@ def grid_visual(dim, grid, score):
     root = tk.Tk()
     root.title('Minesweeper')
     #function to find all bordering zeroes and uncovering them
-    def zero_bfs(cell,q):
+    def zero_bfs(cell, q):
         for i in range(-1,2):
             for j in range(-1,2):
                 #print(cell.coord[0]+i,cell.coord[1]+j)
@@ -95,6 +98,9 @@ def grid_visual(dim, grid, score):
                     continue
                 else:
                     q.append(grid[cell.coord[0]+i][cell.coord[1]+j])
+
+    def invoke(x, y):
+        button[x][y].invoke()
 
     #clickable function for minesweeper
     def mouse_press(row, col):
@@ -126,7 +132,6 @@ def grid_visual(dim, grid, score):
                     button[cell.coord[0]][cell.coord[1]].config(relief = SUNKEN, text = cell.val, state = DISABLED, disabledforeground = "blue")
         
     button = []
-    
     #create a grid of buttons with functionality
     for r in range(dim): #width of grid
         button.append([])
@@ -137,8 +142,11 @@ def grid_visual(dim, grid, score):
                 lambda row = r, col = c: mouse_press(row, col), borderwidth = 1, bg = "light grey", width = 1))
             button[r][-1].grid(row=r,column=c)
     
+    #sv.solver(grid, dim, button, root)
     ####agent will invoke buttons as it goes along (need to organize this)
-    button[0][0].invoke() #this is an example of invoking a button
+    #root.after(500, invoke, 0, 0) #this is an example of invoking a button
+    #root.after(1500, invoke, 2, 2) #this is an example of invoking a button
+    #root.after(2500, invoke, 3, 3) #this is an example of invoking a button
     ####
     root.mainloop()
     return
@@ -154,7 +162,7 @@ def main():
     #1)run mine_gen
     grid = mine_gen(dim, num_mines)
     grid_visual(dim, grid, score)
-    print("Number of bombs detonated:", score[0])
+    print("\nNumber of bombs detonated:", score[0])
     print("Total number of bombs:", num_mines)
     #2)run agent to solve the maze (collect, update KB, take action) 
 
