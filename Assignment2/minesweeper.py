@@ -20,12 +20,14 @@ import solver_minesweeper as sv
 #minesweeper will be formed using a 2d array of struct named cell
 class Cell:
     #instance variables unique to each instance (with default arguments)
-    def __init__(self, val = -1, coord = (0,0), bomb = 0, visited = 0): 
+    def __init__(self, val = -1, coord = (0,0), bomb = 0): 
         self.val = val     #value to denote nearby bombs
         self.bomb = bomb     #value to denote if bomb/clear
         self.coord = coord #this is touple to indicate cell coordinates
-        self.visited = visited #value to indicate if cell has been visited
+        self.visited = 0 #value to indicate if cell has been visited
         self.prob = -1 #value to indicate probability of being a bomb
+        self.updated = 0 #value to indicate if cell prob has changed
+        #normalized? maybe add later
     
 #function to add values to each cell according num of adjacent mines
 def cell_val(dim, grid = [], x = 0, y = 0, depth = 0):
@@ -157,6 +159,9 @@ def main():
     #take in user input of grid dimension and blocked cell probability
     dim = int(input("Enter grid dimension: "))
     num_mines = int(input("Enter number of mines: "))
+    if num_mines > dim*dim:
+        print("Number of mines exceed number of cells...terminating")
+        return
     score = [0]
 
     #1)run mine_gen
