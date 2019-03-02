@@ -1,9 +1,9 @@
-#Probabilistic based solver to minesweeper
+#Probabilistic based solver for minesweeper
 import random
 import minesweeper as ms
-
+DELAY = 500
 #function to count how many valid neighbors a cell has
-def count_neigh(kb, dim, x, y):
+def count_neighbors(kb, dim, x, y):
         count = 9
         for i in range(-1,2):
             for j in range(-1,2):
@@ -17,46 +17,81 @@ def count_neigh(kb, dim, x, y):
         return count
 
 def is_normalized(kb, dim, x, y):
+
     return 
 
+#function to reset updated cell probabilities from last iteration
+def reset_updates(kb, dim):
+    for i in range(0,dim):
+        for j in range(0,dim):
+            kb[i][j].updated = 0
 
-#solver takes in original grid, dimension, button grid, and visual object root
-def solver(grid, dim, button, root):
-    #1)create 2d grid that will represent agent knowledge base(KB)
-    kb = []
+#function to add probabilities to neighboring cells
+def assign_probabilities(kb, button, dim, root, x, y, count): 
+    unknown = lambda x, y: button[x][y].config(text = kb[x][y].prob)
+    boom = lambda x, y: button[x][y].config(text = "Boom", foreground = "red")
+
+    for i in range(-1,2):
+        for j in range(-1,2):
+            #skip if neighboring cells are out of bound 
+            if x+i < 0 or x+i >= dim or y+j < 0 or y+j >=dim:
+                continue
+            #skip if neighboring cells have been visited or have 0 or 1 bomb prob
+            elif (x+i==x and y+j==y) or kb[x+i][y+j].visited==1 or kb[x+i][y+j].prob == 0 or kb[x+i][y+j].prob == 1:
+                continue
+            else:
+                #show probabilities of neighboring cells
+                root.after(DELAY+100, unknown, x+i, y+j)
+                kb[x+i][y+j].bomb = -1 #indicate unknown if bomb
+                #assign prob to cells without prior assignments
+                if kb[x+i][y+j].prob < 0 == 0:
+                    kb[x+i][y+j].prob = kb[x][y].val / count
+                #if cells have prior prob assignments, override and flag updated
+                #cells to avoid overriding more than once
+                elif kb[x+i][y+j].updated == 0:
+                    kb[x+i][y+j].prob = kb[x][y].val / count
+                    kb[x+i][y+j].updated = 1
+
+#function to create 2d array of cells to represent knowledge base
+def create_kb(kb, dim):
     for i in range(0,dim):
         kb.append([])
         for j in range(0,dim):
-            kb[i].append(ms.Cell(0, (i,j), 0))
+            kb[i].append(ms.Cell(-1, (i,j), -1))
 
-    #def invoke(x, y):
-        #button[x][y].invoke()
-    #function for pressing a button
-    query = lambda x, y: button[x][y].invoke()
-    unknown = lambda x, y: button[x][y].config(text = kb[x][y].prob)
+#function to uncover all bordering zeroes and assign proper values to them
+def zero_bfs_assign(kb, grid, cell, q, dim):
+    for i in range(-1,2):
+        for j in range(-1,2):
+            #print(cell.coord[0]+i,cell.coord[1]+j)
+            if cell.coord[0]+i < 0 or cell.coord[0]+i >= dim or cell.coord[1]+j < 0 or cell.coord[1]+j >=dim:
+                #print("skip")
+                continue
+            else:
+                q.append(grid[cell.coord[0]+i][cell.coord[1]+j])
 
-    #2)query cell in given minesweeper grid (at random in the first query) and update KB accordingly:
-    #track cell value and given probability of bomb in each neighboring cell
-    random.seed()
-    x = random.randint(0,dim-1)  #random x coordinate
-    y = random.randint(0,dim-1)  #random y coordinate
-   
-    #visually query cell
-    delay = 500
-    root.after(delay, query, x, y)
-    
-    #update KB based on acquired knowledge
+def update_kb(kb, grid, button, root, dim, x, y):        
     if grid[x][y].bomb == 1:
         kb[x][y].bomb = 1
         kb[x][y].prob = 1
         kb[x][y].visited = 1
+        #root.after(DELAY+100, boom, x, y)
 
     elif grid[x][y].val == 0:
         kb[x][y].val = 0
         kb[x][y].bomb = 0
         kb[x][y].prob = 0
         kb[x][y].visited = 1
-        #add probabilities to neighboring cells
+        #add probabilities to neighboring cells and uncover them!!!!!!
+        #q = []
+        #q.append(grid[x][y])
+        #while len(q) != 0:
+        #    cell = q.pop()
+        #    if kb[cell.coord[0]][cell.coord[1]].visited == 1:
+        #        pass
+        #    else:
+        #        zero_bfs_assign(kb, grid, cell, q, dim)
+
         for i in range(-1,2):
             for j in range(-1,2):
                 if x+i < 0 or x+i >= dim or y+j < 0 or y+j >=dim:
@@ -72,22 +107,49 @@ def solver(grid, dim, button, root):
         kb[x][y].prob = 0
         kb[x][y].visited = 1
 
-        count = count_neigh(kb, dim, x, y)
+        #count valid neighboring cells
+        count = count_neighbors(kb, dim, x, y)
+        #reset updated cell probabilities from last iteration
+        reset_updates(kb, dim)
         #add probabilities to neighboring cells
-        for i in range(-1,2):
-            for j in range(-1,2):
-                #if neighboring cells are out of bound skip
-                if x+i < 0 or x+i >= dim or y+j < 0 or y+j >=dim:
-                    continue
-                #else if neighboring cells have been visited or have 0 or 1 bomb prob
-                elif (x+i==x and y+j==y) or kb[x+i][y+j].visited==1 or kb[x+i][y+j].prob == 0 or kb[x+i][y+j].prob == 1:
-                    continue
-                else:
-                    #show probabilities of neighboring cells
-                    root.after(delay+100, unknown, x+i, y+j)
-                    kb[x+i][y+j].bomb = -1 #indicate unknown if bomb
-                    if kb[x+i][y+j].prob < 0:
-                        kb[x+i][y+j].prob = kb[x][y].val / count
+        assign_probabilities(kb, button, dim, root, x, y, count) 
+    
+
+
+#solver takes in original grid, dimension, button grid, and visual object root
+def solver(grid, dim, button, root):
+    #function to allow AI to query a button
+    query = lambda x, y: button[x][y].invoke()
+    #function to allow AI to flag suspected bomb cells
+    unknown = lambda x, y: button[x][y].config(text = kb[x][y].prob)
+    boom = lambda x, y: button[x][y].config(text = "Boom", foreground = "red")
+
+
+    #1)create 2d grid that will represent agent knowledge base(KB)
+    kb = []
+    create_kb(kb, dim)
+
+    #2)query cell in given minesweeper grid (at random in the first query) and update KB accordingly:
+    #track cell value and given probability of bomb in each neighboring cell
+    random.seed()
+    x = random.randint(0,dim-1)  #random x coordinate
+    y = random.randint(0,dim-1)  #random y coordinate
+    #visually query cell
+    root.after(DELAY, query, x, y)
+
+    #3)update KB based on acquired knowledge
+    update_kb(kb, grid, button, root, dim, x, y)      
+
+    #4)go through kb and normalize each known cell (without overriding other
+    #probabilities that have been already updated once) 
+
+    #5)go through kb and look for any cells with prob > 1 and indicate those as bombs
+   
+    
+    #query another cell - order of querying: 
+    #random in first step
+    #cell with lowest probability
+    #cell without assigned probability
 
 
 
