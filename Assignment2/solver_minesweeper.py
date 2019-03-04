@@ -1,20 +1,25 @@
 #Probabilistic based solver for minesweeper
 import random
 import minesweeper as ms
-DELAY = 500
+DELAY = 1000
+
+def time():
+    global DELAY
+    DELAY += 1000
+    return DELAY
+
 #function to count how many valid neighbors a cell has
 def count_neighbors(kb, dim, x, y):
-        count = 9
-        for i in range(-1,2):
-            for j in range(-1,2):
-                #if neighboring cells are out of bound subtract one neighbor
-                if x+i < 0 or x+i >= dim or y+j < 0 or y+j >=dim:
+    count = 9
+    for i in range(-1,2):
+          for j in range(-1,2):
+            #if neighboring cells are out of bound subtract one neighbor
+              if x+i < 0 or x+i >= dim or y+j < 0 or y+j >=dim:
+                count -= 1
+            #else if neighboring cells have been visited or have 0 or 1 bomb prob                #subtract one neighbor
+              elif (x+i==x and y+j==y) or kb[x+i][y+j].visited==1 or kb[x+i][y+j].updated==1 or kb[x+i][y+j].prob == 0 or kb[x+i][y+j].prob == 1:
                     count -= 1
-                #else if neighboring cells have been visited or have 0 or 1 bomb prob
-                #subtract one neighbor
-                elif (x+i==x and y+j==y) or kb[x+i][y+j].visited==1 or kb[x+i][y+j].prob == 0 or kb[x+i][y+j].prob == 1:
-                    count -= 1
-        return count
+    return count
 
 def is_normalized(kb, dim, x, y):
 
@@ -41,15 +46,21 @@ def assign_probabilities(kb, button, dim, root, x, y, count):
                 continue
             else:
                 #show probabilities of neighboring cells
-                root.after(DELAY+100, unknown, x+i, y+j)
+                root.after(3000, unknown, x+i, y+j)
                 kb[x+i][y+j].bomb = -1 #indicate unknown if bomb
                 #assign prob to cells without prior assignments
                 if kb[x+i][y+j].prob < 0 == 0:
-                    kb[x+i][y+j].prob = kb[x][y].val / count
+                    if count == 0:
+                        kb[x+i][y+j].prob = 0
+                    else:
+                        kb[x+i][y+j].prob = round(kb[x][y].val / count, 2)
                 #if cells have prior prob assignments, override and flag updated
                 #cells to avoid overriding more than once
                 elif kb[x+i][y+j].updated == 0:
-                    kb[x+i][y+j].prob = kb[x][y].val / count
+                    if count == 0:
+                        kb[x+i][y+j].prob = 0
+                    else:
+                        kb[x+i][y+j].prob = round(kb[x][y].val / count, 2)
                     kb[x+i][y+j].updated = 1
 
 #function to create 2d array of cells to represent knowledge base
@@ -60,15 +71,35 @@ def create_kb(kb, dim):
             kb[i].append(ms.Cell(-1, (i,j), -1))
 
 #function to uncover all bordering zeroes and assign proper values to them
-def zero_bfs_assign(kb, grid, cell, q, dim):
+def zero_bfs_assign(kb, grid, button, root, cell, q, dim):
+    print("in bfs")
+    x = cell.coord[0]
+    y = cell.coord[1]
     for i in range(-1,2):
         for j in range(-1,2):
             #print(cell.coord[0]+i,cell.coord[1]+j)
-            if cell.coord[0]+i < 0 or cell.coord[0]+i >= dim or cell.coord[1]+j < 0 or cell.coord[1]+j >=dim:
+            #if cells are out of bounds, ignore
+            if x+i < 0 or x+i >= dim or y+j < 0 or y+j >=dim: #or (x+i == x and y+j == y):
                 #print("skip")
                 continue
+            #else update cell value and check for more zeroes
             else:
-                q.append(grid[cell.coord[0]+i][cell.coord[1]+j])
+                kb[x+i][y+j].val = grid[x+i][y+j].val
+                if kb[x+i][y+j].val > 0:
+                    #count valid neighboring cells
+                    count = count_neighbors(kb, dim, x+i, y+j)
+                    #reset updated cell probabilities from last iteration
+                    reset_updates(kb, dim)
+                    #add probabilities to neighboring cells
+                    assign_probabilities(kb, button, dim, root, x+i, y+j, count) 
+                    kb[x+i][y+j].bomb = 0
+                    kb[x+i][y+j].prob = 0
+                    kb[x+i][y+j].visited = 1
+                else:
+                    kb[x+i][y+j].bomb = 0
+                    kb[x+i][y+j].prob = 0
+                    #kb[x+i][y+j].visited = 1
+                    q.append(grid[x+i][y+j])
 
 def update_kb(kb, grid, button, root, dim, x, y):        
     if grid[x][y].bomb == 1:
@@ -81,25 +112,25 @@ def update_kb(kb, grid, button, root, dim, x, y):
         kb[x][y].val = 0
         kb[x][y].bomb = 0
         kb[x][y].prob = 0
-        kb[x][y].visited = 1
         #add probabilities to neighboring cells and uncover them!!!!!!
-        #q = []
-        #q.append(grid[x][y])
-        #while len(q) != 0:
-        #    cell = q.pop()
-        #    if kb[cell.coord[0]][cell.coord[1]].visited == 1:
-        #        pass
-        #    else:
-        #        zero_bfs_assign(kb, grid, cell, q, dim)
+        q = []
+        q.append(grid[x][y])
+        while len(q) != 0:
+            cell = q.pop()
+            if kb[cell.coord[0]][cell.coord[1]].visited == 1:
+                pass
+            else:
+                zero_bfs_assign(kb, grid, button, root, cell, q, dim)
+                kb[cell.coord[0]][cell.coord[1]].visited = 1
 
-        for i in range(-1,2):
-            for j in range(-1,2):
-                if x+i < 0 or x+i >= dim or y+j < 0 or y+j >=dim:
-                    #print("skip")
-                    continue
-                else:
-                    kb[x+i][y+j].bomb = 0
-                    kb[x+i][y+j].prob = 0
+        #for i in range(-1,2):
+        #    for j in range(-1,2):
+        #        if x+i < 0 or x+i >= dim or y+j < 0 or y+j >=dim:
+        #            #print("skip")
+        #            continue
+        #        else:
+        #            kb[x+i][y+j].bomb = 0
+        #            kb[x+i][y+j].prob = 0
     #this is the case where cell is not bomb and is not 0
     else: 
         kb[x][y].val = grid[x][y].val
@@ -114,6 +145,35 @@ def update_kb(kb, grid, button, root, dim, x, y):
         #add probabilities to neighboring cells
         assign_probabilities(kb, button, dim, root, x, y, count) 
     
+def query_cell(kb, grid, dim, root):
+    x = 0
+    y = 0
+    #query cells that have no bombs in them and haven't been visited
+    for i in range(0,dim):
+        for j in range(0,dim):
+            if kb[i][j].prob == 0 and kb[i][j].visited == 0:
+                x = i
+                y = j
+                return x, y
+    #query cells that we know nothing about
+    for i in range(0,dim):
+        for j in range(0,dim):
+            if kb[i][j].prob < 0 and kb[i][j].visited == 0:
+                x = i
+                y = j
+                return x, y
+    #query cells with the lowest probability of exploding
+    min = 1
+    for i in range(0,dim):
+        for j in range(0,dim):
+            if kb[i][j].prob > 0 and kb[i][j].prob < 1 and kb[i][j].visited == 0:
+                if min > kb[i][j].prob:
+                    min = kb[i][j].prob
+                    x = i
+                    y = j
+
+    return x, y
+
 
 
 #solver takes in original grid, dimension, button grid, and visual object root
@@ -135,11 +195,20 @@ def solver(grid, dim, button, root):
     x = random.randint(0,dim-1)  #random x coordinate
     y = random.randint(0,dim-1)  #random y coordinate
     #visually query cell
-    root.after(DELAY, query, x, y)
+    root.after(time(), query, x, y)
 
     #3)update KB based on acquired knowledge
-    update_kb(kb, grid, button, root, dim, x, y)      
+    update_kb(kb, grid, button, root, dim, x, y)
+    
+    
+    for i in range(1):
+        x, y = query_cell(kb, grid, dim, root)
+        update_kb(kb, grid, button, root, dim, x, y)
+        root.after(time(), query, x, y)
 
+    for i in range(0,dim):
+        for j in range(0,dim):
+            print(kb[i][j].val)
     #4)go through kb and normalize each known cell (without overriding other
     #probabilities that have been already updated once) 
 
