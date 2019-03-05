@@ -1,6 +1,5 @@
-#Probabilistic based solver to minesweeper
+#logic based solver to minesweeper
 import random
-import minesweeper as ms
 
 class Statement():
 	def __init__(self, coords, mines):
@@ -72,13 +71,15 @@ def update_ls(ls, x, y, b):
                     s.mines = s.mines-b
                     #print("curr mines: "+str(s.mines))
              
-                   
+
+#updates list of known cells                   
 def update_kl(kl, x, y, b):
     if kl.count(Statement((x,y), b)) == 0:
         #print("kl add: "+str(x)+","+str(y)+" - "+str(b))
         kl.append(Statement((x,y), b))
     
-    
+
+#updates logical statement based on list of known cells  
 def update_s(kl, s):
     for k in kl:
         for n in s.coords:
@@ -89,7 +90,8 @@ def update_s(kl, s):
                 s.mines = s.mines-k.mines
                 #print("curr mines: "+str(s.mines))
     
-    
+
+#adds cell to list of known cells based on changes to list of logical statements    
 def add_to_kl(kl, ls, q):
     for l in ls:
         if len(l.coords) == 1:
@@ -105,7 +107,7 @@ def add_to_kl(kl, ls, q):
                     q.remove(c) 
                     q.insert(0, c)
     
-                    
+#finds all bordering zeroes and uncover them                    
 def zero_bfs(c, l, dim):
     for i in range(-1,2):
         for j in range(-1,2):
@@ -149,7 +151,7 @@ def solver(grid, dim, button, root):
         
         #update KB based on acquired knowledge
         #if a clear cell's value is 0, all neighbors are clear, also find bordering 0s
-        #for each uncovered cell, add to list of known cells, update list of logical statements, and remove from priority queue
+        #for each uncovered cell, add to list of known cells, update list of logical statements and known cells, and remove from priority queue
         if grid[x][y].val == 0:
             l = []
             l.append((x,y))
@@ -208,7 +210,7 @@ def solver(grid, dim, button, root):
             add_to_kl(kl, ls, q)
                                
         #if a clear cell's value is equal to the number of valid neighbors, all neighbors are mines 
-        #for each neighbor, add to list of known cells, update list of logical statements, and remove from priority queue       
+        #for each neighbor, add to list of known cells, update list of logical statements and known cells, and remove from priority queue       
         if grid[x][y].val == num_neighbors(dim, x, y):
             kb[x][y].val = grid[x][y].val 
             if x+1 < dim:
@@ -260,6 +262,7 @@ def solver(grid, dim, button, root):
                 if q.count((x,y-1)) != 0:
                     q.remove((x,y-1))       
         
+        #case that cell is clear, add and update logical statements
         elif grid[x][y].val > 0 and kb[x][y].bomb == 0:
             #print("val > 0")
             kb[x][y].val = grid[x][y].val   
