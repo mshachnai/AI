@@ -72,7 +72,7 @@ def update_ls(ls, x, y, b):
                     #print("curr mines: "+str(s.mines))
              
 
-#updates list of known cells                   
+#updates list of known cells based on cell currently being clicked                  
 def update_kl(kl, x, y, b):
     if kl.count(Statement((x,y), b)) == 0:
         #print("kl add: "+str(x)+","+str(y)+" - "+str(b))
@@ -107,7 +107,7 @@ def add_to_kl(kl, ls, q):
                     q.remove(c) 
                     q.insert(0, c)
     
-#finds all bordering zeroes and uncover them                    
+#finds all bordering zeroes and uncovers them                    
 def zero_bfs(c, l, dim):
     for i in range(-1,2):
         for j in range(-1,2):
