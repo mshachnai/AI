@@ -89,7 +89,22 @@ def update_s(kl, s):
                 s.coords.remove(n)
                 s.mines = s.mines-k.mines
                 #print("curr mines: "+str(s.mines))
-    
+                
+           
+#use logical statements to update list of logical statements                 
+def merge_ls(ls):
+    if len(ls) > 1:
+        for i in range(0, len(ls)-1):
+            for j in range(i+1, len(ls)):
+                if len(ls[i].coords) > len(ls[j].coords):
+                    if all(x in ls[i].coords for x in ls[j].coords):
+                        ls[i].coords = [e for e in ls[i].coords if e not in ls[j].coords]
+                        ls[i].mines = ls[i].mines - ls[j].mines
+                else:
+                    if all(x in ls[j].coords for x in ls[i].coords):
+                        ls[j].coords = [e for e in ls[j].coords if e not in ls[i].coords]
+                        ls[j].mines = ls[j].mines - ls[i].mines    
+                
 
 #adds cell to list of known cells based on changes to list of logical statements    
 def add_to_kl(kl, ls, q):
@@ -98,6 +113,7 @@ def add_to_kl(kl, ls, q):
             if kl.count(Statement((l.coords[0][0], l.coords[0][1]), l.mines)) == 0:
                 kl.append(Statement((l.coords[0][0], l.coords[0][1]), l.mines))
                 ls.remove(l)
+                update_ls(ls, l.coords[0][0], l.coords[0][1], l.mines)
             if q.count((l.coords[0][0],l.coords[0][1])) != 0:
                 if l.mines == 1:
                     q.remove((l.coords[0][0],l.coords[0][1]))
@@ -106,6 +122,7 @@ def add_to_kl(kl, ls, q):
                     c = (l.coords[0][0],l.coords[0][1])
                     q.remove(c) 
                     q.insert(0, c)
+    
     
 #finds all bordering zeroes and uncovers them                    
 def zero_bfs(c, l, dim):
@@ -166,6 +183,7 @@ def solver(grid, dim, button, root):
                     kb[i][j].val = grid[i][j].val
                     kb[i][j].visited = 1
                     kb[i][j].bomb = 0
+                    merge_ls(ls)
                     update_kl(kl, i, j, 0)
                     update_ls(ls, i, j, 0)
                     add_to_kl(kl, ls, q)
@@ -178,6 +196,7 @@ def solver(grid, dim, button, root):
                     kb[i][j].val = grid[i][j].val
                     kb[i][j].visited = 1
                     kb[i][j].bomb = 0
+                    merge_ls(ls)
                     update_kl(kl, i, j, 0)
                     update_ls(ls, i, j, 0)
                     add_to_kl(kl, ls, q)
@@ -196,6 +215,7 @@ def solver(grid, dim, button, root):
             kb[x][y].bomb = 1
             kb[x][y].visited = 1
             b = 1
+            merge_ls(ls)
             update_kl(kl, x, y, b)
             update_ls(ls, x, y, b)
             add_to_kl(kl, ls, q)
@@ -205,6 +225,7 @@ def solver(grid, dim, button, root):
             kb[x][y].bomb = 0
             kb[x][y].visited = 1
             b = 0
+            merge_ls(ls)
             update_kl(kl, x, y, b)
             update_ls(ls, x, y, b)
             add_to_kl(kl, ls, q)
@@ -214,48 +235,56 @@ def solver(grid, dim, button, root):
         if grid[x][y].val == num_neighbors(dim, x, y):
             kb[x][y].val = grid[x][y].val 
             if x+1 < dim:
+                merge_ls(ls)
                 update_kl(kl, x+1, y, 1)
                 update_ls(ls, x+1, y, 1)
                 add_to_kl(kl, ls, q)
                 if q.count((x+1,y)) != 0:
                     q.remove((x+1,y))
                 if y+1 < dim:
+                    merge_ls(ls)
                     update_kl(kl, x+1, y+1, 1)
                     update_ls(ls, x+1, y+1, 1)
                     add_to_kl(kl, ls, q)
                     if q.count((x+1,y+1)) != 0:
                         q.remove((x+1,y+1))
                 if y-1 > -1:
+                    merge_ls(ls)
                     update_kl(kl, x+1, y-1, 1)
                     update_ls(ls, x+1, y-1, 1)
                     add_to_kl(kl, ls, q)
                     if q.count((x+1,y-1)) != 0:
                         q.remove((x+1,y-1))
             if y+1 < dim:
+                merge_ls(ls)
                 update_kl(kl, x, y+1, 1)
                 update_ls(ls, x, y+1, 1)
                 add_to_kl(kl, ls, q)
                 if q.count((x,y+1)) != 0:
                     q.remove((x,y+1))
             if x-1 > -1:
+                merge_ls(ls)
                 update_kl(kl, x-1, y, 1)
                 update_ls(ls, x-1, y, 1)
                 add_to_kl(kl, ls, q)
                 if q.count((x-1,y)) != 0:
                     q.remove((x-1,y))
                 if y+1 < dim:
+                    merge_ls(ls)
                     update_kl(kl, x-1, y+1, 1)
                     update_ls(ls, x-1, y+1, 1)
                     add_to_kl(kl, ls, q)
                     if q.count((x-1,y+1)) != 0:
                         q.remove((x-1,y+1))
                 if y-1 > -1:
+                    merge_ls(ls)
                     update_kl(kl, x-1, y-1, 1)
                     update_ls(ls, x-1, y-1, 1)
                     add_to_kl(kl, ls, q)
                     if q.count((x-1,y-1)) != 0:
                         q.remove((x-1,y-1))
             if y-1 > -1:
+                merge_ls(ls)
                 update_kl(kl, x, y-1, 1)
                 update_ls(ls, x, y-1, 1)
                 add_to_kl(kl, ls, q)
