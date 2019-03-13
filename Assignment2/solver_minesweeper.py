@@ -64,18 +64,14 @@ def update_ls(ls, x, y, b):
     if len(ls) != 0:
         for s in ls:
             for c in s.coords:
-                #print("ls c: "+str(c[0])+","+str(c[1])+" - "+str(s.mines))
                 if c == (x,y):
-                    #print("ls rm: "+str(x)+","+str(y))
                     s.coords.remove((x,y))
                     s.mines = s.mines-b
-                    #print("curr mines: "+str(s.mines))
              
 
 #updates list of known cells based on cell currently being clicked                  
 def update_kl(kl, x, y, b):
     if kl.count(Statement((x,y), b)) == 0:
-        #print("kl add: "+str(x)+","+str(y)+" - "+str(b))
         kl.append(Statement((x,y), b))
     
 
@@ -83,12 +79,9 @@ def update_kl(kl, x, y, b):
 def update_s(kl, s):
     for k in kl:
         for n in s.coords:
-            #print("s c: "+str(n[0])+","+str(n[1])+" - "+str(s.mines))
             if k.coords[0] == n[0] and k.coords[1] == n[1]:
-                #print("ls rm: "+str(n[0])+","+str(n[1]))
                 s.coords.remove(n)
                 s.mines = s.mines-k.mines
-                #print("curr mines: "+str(s.mines))
                 
            
 #use logical statements to update list of logical statements                 
@@ -116,8 +109,7 @@ def add_to_kl(kl, ls, q):
                 update_ls(ls, l.coords[0][0], l.coords[0][1], l.mines)
             if q.count((l.coords[0][0],l.coords[0][1])) != 0:
                 if l.mines == 1:
-                    q.remove((l.coords[0][0],l.coords[0][1]))
-                    #print("has mine:"+str(l.coords[0][0])+","+str(l.coords[0][1])) 
+                    q.remove((l.coords[0][0],l.coords[0][1])) 
                 elif l.mines == 0:
                     c = (l.coords[0][0],l.coords[0][1])
                     q.remove(c) 
@@ -161,7 +153,6 @@ def solver(grid, dim, button, root):
         c = q.pop(0)
         x = c[0]
         y = c[1]
-        #print(str(x)+","+str(y))
         delay = 500
         root.after(delay, query, x, y)
         b = -1
@@ -189,7 +180,6 @@ def solver(grid, dim, button, root):
                     add_to_kl(kl, ls, q)
                     if q.count((i,j)) != 0:
                         q.remove((i,j))
-                        #print(str(i)+","+str(j))
                     #run function to uncover all bordering 0s
                     zero_bfs(c, l, dim)
                 else:
@@ -202,7 +192,6 @@ def solver(grid, dim, button, root):
                     add_to_kl(kl, ls, q)
                     if q.count((i,j)) != 0:
                         q.remove((i,j))
-                        #print(str(i)+","+str(j))
                     neigh = neigh_eval(dim, i, j)     
                     s = Statement(neigh, kb[i][j].val) 
                     update_s(kl, s)
@@ -293,7 +282,6 @@ def solver(grid, dim, button, root):
         
         #case that cell is clear, add and update logical statements
         elif grid[x][y].val > 0 and kb[x][y].bomb == 0:
-            #print("val > 0")
             kb[x][y].val = grid[x][y].val   
             neigh = neigh_eval(dim, x, y)     
             s = Statement(neigh, kb[x][y].val)
