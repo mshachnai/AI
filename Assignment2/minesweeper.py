@@ -8,28 +8,19 @@ import random
 import copy
 import solver_minesweeper as sv
 
-######for later use
-#DEBUG is used for turning visuals on/off: (not complete yet)
-#0: will not show any visuals
-#1: will show grid visuals
-#2: will show plotting graphs
-#3: will show all visuals
-#DEBUG = 3 
-#RUNS = 1 #number of times each algorithm is run for timing
-
 #minesweeper will be formed using a 2d array of struct named cell
 class Cell:
     #instance variables unique to each instance (with default arguments)
     def __init__(self, val = -1, coord = (0,0), bomb = 0): 
-        self.val = val     #value to denote nearby bombs
-        self.bomb = bomb     #value to denote if bomb/clear
-        self.coord = coord #this is touple to indicate cell coordinates
+        self.val = val #value to denote nearby bombs
+        self.bomb = bomb #value to denote if bomb/clear
+        self.coord = coord #this is tuple to indicate cell coordinates
         self.visited = 0 #value to indicate if cell has been visited
         self.prob = -1 #value to indicate probability of being a bomb
         self.updated = 0 #value to indicate if cell prob has changed
-        #normalized? maybe add later
-    
-#function to add values to each cell according num of adjacent mines
+
+
+#function to add values to each cell according number of adjacent mines
 def cell_val(dim, grid = [], x = 0, y = 0, depth = 0):
     #base cases
     #check if depth search reached (this can vary if needed)
@@ -42,14 +33,14 @@ def cell_val(dim, grid = [], x = 0, y = 0, depth = 0):
         return 0
     #check if coordinate is a bomb and increment accordingly
     elif grid[x][y].bomb == 1:
-        #print("this is bomb coordinate", X, Y)
+        #print("this is bomb coordinate", x, y)
         return 1
         
     depth += 1
     return 0 + cell_val(dim, grid, x-1, y-1, depth) + cell_val(dim, grid, x-1,y,     depth) + cell_val(dim, grid, x-1, y+1, depth) + cell_val(dim, grid, x, y-1, depth) + cell_val(dim, grid, x, y+1, depth ) + cell_val(dim, grid, x+1, y-1, depth ) + cell_val(dim, grid, x+1, y, depth ) + cell_val(dim, grid, x+1, y+1, depth )
 
 
-#function to generate minesweeper - takes in dimension of grid, probability of blocked cell, and 2d array
+#function to generate minesweeper - takes in dimension of grid and number of mines
 def mine_gen(dim, num_mines):
     grid = []
     count = 0 #number of mines
@@ -83,20 +74,17 @@ def mine_gen(dim, num_mines):
     return grid
 
 
-
 #function to generate a visual of the grid and its solution if given
 def grid_visual(dim, grid, score):
 
     #initialize visual window and create grid layout using buttons
     root = tk.Tk()
     root.title('Minesweeper')
-    #function to find all bordering zeroes and uncovering them
+    #function to find all bordering zeroes and uncover them
     def zero_bfs(cell, q):
         for i in range(-1,2):
             for j in range(-1,2):
-                #print(cell.coord[0]+i,cell.coord[1]+j)
                 if cell.coord[0]+i < 0 or cell.coord[0]+i >= dim or cell.coord[1]+j < 0 or cell.coord[1]+j >=dim:
-                    #print("skip")
                     continue
                 else:
                     q.append(grid[cell.coord[0]+i][cell.coord[1]+j])
@@ -121,10 +109,7 @@ def grid_visual(dim, grid, score):
  
             while len(q) != 0:
                 cell = q.pop()
-                #print(button[cell.coord[0]][cell.coord[1]])
-                #print(cell.coord[0],cell.coord[1])
                 if button[cell.coord[0]][cell.coord[1]]['relief'] == "sunken":
-                    #print(button[cell.coord[0]][cell.coord[1]]['relief'] == 'sunken')
                     pass
                 elif cell.val == 0:
                     button[cell.coord[0]][cell.coord[1]].config(relief = SUNKEN, text = cell.val, state = DISABLED, disabledforeground = "blue")
@@ -144,19 +129,14 @@ def grid_visual(dim, grid, score):
                 lambda row = r, col = c: mouse_press(row, col), borderwidth = 1, bg = "light grey", width = 1))
             button[r][-1].grid(row=r,column=c)
     
-    #sv.solver(grid, dim, button, root)
-    ####agent will invoke buttons as it goes along (need to organize this)
-    #root.after(500, invoke, 0, 0) #this is an example of invoking a button
-    #root.after(1500, invoke, 2, 2) #this is an example of invoking a button
-    #root.after(2500, invoke, 3, 3) #this is an example of invoking a button
-    ####
+    sv.solver(grid, dim, button, root)
     root.mainloop()
     return
 
 
 def main():
 
-    #take in user input of grid dimension and blocked cell probability
+    #take in user input of grid dimension and number of mines
     dim = int(input("Enter grid dimension: "))
     num_mines = int(input("Enter number of mines: "))
     if num_mines > dim*dim:
@@ -164,29 +144,13 @@ def main():
         return
     score = [0]
 
-    #1)run mine_gen
+    #1)generate grid
     grid = mine_gen(dim, num_mines)
+    #2)generate visual and solve
     grid_visual(dim, grid, score)
+    
     print("\nNumber of bombs detonated:", score[0])
     print("Total number of bombs:", num_mines)
-    #2)run agent to solve the maze (collect, update KB, take action) 
-
-
-    #3)plot agent stats with graphs
-    #density vs. solvability
-    #array = [1,2,3,4]
-    #plt.plot(array, [1, 2, 3, 4], 'ro')
-    #plt.ylabel('density')
-    #plt.xlabel('solvability')
-    #if DEBUG == 2 or DEBUG == 3 :
-    #    plt.show()
-    #
-    ##density vs. shortest expected path
-    #plt.plot([1,2,3,4], [1, 2, 7, 8], 'ro')
-    #plt.ylabel('density')
-    #plt.xlabel('shortest expected path')
-    #if DEBUG == 2 or DEBUG == 3:
-    #    plt.show()"""
 
     return
 
