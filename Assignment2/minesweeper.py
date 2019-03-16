@@ -6,7 +6,7 @@ from tkinter import ttk
 import timeit as tm
 import random
 import copy
-import solver_minesweeper as sv
+import prob_solver_minesweeper as sv
 
 ######for later use
 #DEBUG is used for turning visuals on/off: (not complete yet)
@@ -20,7 +20,7 @@ import solver_minesweeper as sv
 #minesweeper will be formed using a 2d array of struct named cell
 class Cell:
     #instance variables unique to each instance (with default arguments)
-    def __init__(self, val = -1, coord = (0,0), bomb = 0): 
+    def __init__(self, val = -1, coord = (0,0), bomb = -1): 
         self.val = val     #value to denote nearby bombs
         self.bomb = bomb     #value to denote if bomb/clear
         self.coord = coord #this is touple to indicate cell coordinates
@@ -116,6 +116,7 @@ def grid_visual(dim, grid, score):
             button[row][col].config(relief = SUNKEN, text = grid[row][col].val, state = DISABLED, disabledforeground = "blue")
         #if cell value = 0 - show it and uncover all bordering 0s
         else:
+            #queue for uncovering each bordering zero with zero_bfs function
             q = []
             q.append(grid[row][col])
  
@@ -133,23 +134,21 @@ def grid_visual(dim, grid, score):
                 else:
                     button[cell.coord[0]][cell.coord[1]].config(relief = SUNKEN, text = cell.val, state = DISABLED, disabledforeground = "blue")
         
-    button = []
     #create a grid of buttons with functionality
+    button = []
     for r in range(dim): #width of grid
         button.append([])
         for c in range(dim): #height of grid
 
             #create blank clickable cells (functionality is in each cell)
             button[r].append(tk.Button(root, relief = SOLID, text = "", command =
-                lambda row = r, col = c: mouse_press(row, col), borderwidth = 1, bg = "light grey", width = 1))
+                lambda row = r, col = c: mouse_press(row, col), borderwidth = 1, bg =
+                "light grey", width = 2, height = 2))
             button[r][-1].grid(row=r,column=c)
+
+    #solver for the minesweeper
+    sv.solver(grid, dim, button, root)
     
-    #sv.solver(grid, dim, button, root)
-    ####agent will invoke buttons as it goes along (need to organize this)
-    #root.after(500, invoke, 0, 0) #this is an example of invoking a button
-    #root.after(1500, invoke, 2, 2) #this is an example of invoking a button
-    #root.after(2500, invoke, 3, 3) #this is an example of invoking a button
-    ####
     root.mainloop()
     return
 
@@ -159,10 +158,28 @@ def main():
     #take in user input of grid dimension and blocked cell probability
     dim = int(input("Enter grid dimension: "))
     num_mines = int(input("Enter number of mines: "))
+    grid = []
     if num_mines > dim*dim:
         print("Number of mines exceed number of cells...terminating")
         return
     score = [0]
+
+    ########this is for testing purposes only ########
+    #dim = 4
+    #num_mines = 3
+    #for i in range(0,dim):
+    #    grid.append([])
+    #    for j in range(0,dim):
+    #        grid[i].append(Cell(coord = (i,j)))
+    #grid[0][0].val = 0    
+    #grid[0][1].val = 0    
+    #grid[0][2].val = 0    
+    #grid[1][0].val = 1    
+    #grid[1][1].val = 2    
+    #grid[1][2].val = 2    
+    #grid[2][0].val = 1    
+    #grid[2][1].bomb = 1    
+    #grid[2][2].bomb = 1    
 
     #1)run mine_gen
     grid = mine_gen(dim, num_mines)
