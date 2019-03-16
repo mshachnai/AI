@@ -1,4 +1,4 @@
-#Probabilistic solver for minesweeper
+#Probabilistic solver for minesweeper -- Rutgers University -- M.Shachnai
 import random
 import minesweeper as ms
 DELAY = 1000
