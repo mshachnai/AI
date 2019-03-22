@@ -6,7 +6,7 @@ from tkinter import ttk
 import timeit as tm
 import random
 import copy
-import prob_solver_minesweeper as sv
+#import prob_solver_minesweeper as sv
 
 ######for later use
 #DEBUG is used for turning visuals on/off: (not complete yet)
@@ -17,137 +17,87 @@ import prob_solver_minesweeper as sv
 #DEBUG = 3 
 #RUNS = 1 #number of times each algorithm is run for timing
 
-#minesweeper will be formed using a 2d array of struct named cell
+#S&D will be formed using a 2d array of struct named cell
 class Cell:
     #instance variables unique to each instance (with default arguments)
-    def __init__(self, val = -1, coord = (0,0), bomb = -1): 
-        self.val = val     #value to denote nearby bombs
-        self.bomb = bomb     #value to denote if bomb/clear
+    def __init__(self, ltype = "flat", coord = (0,0), target = 0): 
+        self.ltype = ltype     #value to denote land type 
+        self.target = target     #value to denote if target(1)/clear(0)
         self.coord = coord #this is touple to indicate cell coordinates
         self.visited = 0 #value to indicate if cell has been visited
         self.prob = -1 #value to indicate probability of being a bomb
-        self.updated = 0 #value to indicate if cell prob has changed
-        #normalized? maybe add later
-    
-#function to add values to each cell according num of adjacent mines
-def cell_val(dim, grid = [], x = 0, y = 0, depth = 0):
-    #base cases
-    #check if depth search reached (this can vary if needed)
-    if depth == 2:
-        #print("depth = 2")
-        return 0
-    #check if X/Y coordinates are out of range 
-    elif x < 0 or x >= dim or y < 0 or y >= dim: 
-        #print("out of range")
-        return 0
-    #check if coordinate is a bomb and increment accordingly
-    elif grid[x][y].bomb == 1:
-        #print("this is bomb coordinate", X, Y)
-        return 1
-        
-    depth += 1
-    return 0 + cell_val(dim, grid, x-1, y-1, depth) + cell_val(dim, grid, x-1,y,     depth) + cell_val(dim, grid, x-1, y+1, depth) + cell_val(dim, grid, x, y-1, depth) + cell_val(dim, grid, x, y+1, depth ) + cell_val(dim, grid, x+1, y-1, depth ) + cell_val(dim, grid, x+1, y, depth ) + cell_val(dim, grid, x+1, y+1, depth )
 
-
-#function to generate minesweeper - takes in dimension of grid, probability of blocked cell, and 2d array
-def mine_gen(dim, num_mines):
+#function to generate S&D map - takes in dimension of map
+def map_gen(dim):
     grid = []
-    count = 0 #number of mines
     random.seed()
 
-    #create 2d grid
+    #create 2d grid and assign land types to each (.2 flat, .3 hill, .3 forest, .2 #cave)
     for i in range(0,dim):
         grid.append([])
         for j in range(0,dim):
-            grid[i].append(Cell(coord = (i,j))) 
+            grid[i].append(Cell(coord = (i,j)))
+            rand = random.randint(1, 10)
+            if rand <= 2:
+                grid[i][j].ltype = "flat"
+            elif rand > 2 and rand <= 5:
+                grid[i][j].ltype = "hill"
+            elif rand > 5 and rand <= 8:
+                grid[i][j].ltype = "forest"
+            elif rand > 8 and rand <= 10:
+                grid[i][j].ltype = "cave"
 
-    #add bombs to random coordinates according to num of mines inputted
-    while count != num_mines : 
-        x = random.randint(0,dim-1)  #random X coordinate
-        y = random.randint(0,dim-1)  #random Y coordinate
+    #assign target randomly to one of the cells
+    x = random.randint(0,dim-1)  #random X coordinate
+    y = random.randint(0,dim-1)  #random Y coordinate
+    grid[x][y].target = 1 
         
-        #assign bombs randomly until number of bombs required is reached
-        if grid[x][y].bomb == 1 :  
-            continue
-        else :
-            grid[x][y].bomb = 1 
-        
-        #count number of mines placed
-        count += 1
-    
-    #add cell value based on adjacent bombs
-    for i in range(dim):
-        for j in range(dim):
-            grid[i][j].val = cell_val(dim, grid, x = i, y = j)
-    
     return grid
 
 
 
-#function to generate a visual of the grid and its solution if given
+#function to generate a visual of the grid and its solver if given
 def grid_visual(dim, grid, score):
 
     #initialize visual window and create grid layout using buttons
     root = tk.Tk()
-    root.title('Minesweeper')
-    #function to find all bordering zeroes and uncovering them
-    def zero_bfs(cell, q):
-        for i in range(-1,2):
-            for j in range(-1,2):
-                #print(cell.coord[0]+i,cell.coord[1]+j)
-                if cell.coord[0]+i < 0 or cell.coord[0]+i >= dim or cell.coord[1]+j < 0 or cell.coord[1]+j >=dim:
-                    #print("skip")
-                    continue
-                else:
-                    q.append(grid[cell.coord[0]+i][cell.coord[1]+j])
-
-    def invoke(x, y):
-        button[x][y].invoke()
-
+    root.title('Search & Destroy')
+    
     #clickable function for minesweeper
     def mouse_press(row, col):
-        #if bomb - show it
-        if grid[row][col].bomb == 1: 
-            button[row][col].config(bg = "red", disabledforeground = "black", command = 0, relief = SUNKEN, text = "X", state = DISABLED)
-            #keep track of number of bombs detonated
+        #if cell is target (and with correct probability is found) - show it
+        if grid[row][col].target == 1: #add probability clause for false negative : 
+            button[row][col].config(disabledforeground = "red", font = '40', command = 0, relief = SUNKEN, text = "X", state = DISABLED)
+            #keep track of number of cells explored
             score[0] += 1
-        #if cell value != 0 - show it
-        elif grid[row][col].val > 0: 
-            button[row][col].config(relief = SUNKEN, text = grid[row][col].val, state = DISABLED, disabledforeground = "blue")
-        #if cell value = 0 - show it and uncover all bordering 0s
+        #else search failed - show it
         else:
-            #queue for uncovering each bordering zero with zero_bfs function
-            q = []
-            q.append(grid[row][col])
- 
-            while len(q) != 0:
-                cell = q.pop()
-                #print(button[cell.coord[0]][cell.coord[1]])
-                #print(cell.coord[0],cell.coord[1])
-                if button[cell.coord[0]][cell.coord[1]]['relief'] == "sunken":
-                    #print(button[cell.coord[0]][cell.coord[1]]['relief'] == 'sunken')
-                    pass
-                elif cell.val == 0:
-                    button[cell.coord[0]][cell.coord[1]].config(relief = SUNKEN, text = cell.val, state = DISABLED, disabledforeground = "blue")
-                    #run function to uncover all bordering 0s
-                    zero_bfs(cell,q)
-                else:
-                    button[cell.coord[0]][cell.coord[1]].config(relief = SUNKEN, text = cell.val, state = DISABLED, disabledforeground = "blue")
-        
+            button[row][col].config(text = "F")
+            button[row][col].after(300, lambda: button[row][col].config(text = ""))
+            #keep track of number of cells explored
+            score[0] += 1
+                
     #create a grid of buttons with functionality
     button = []
     for r in range(dim): #width of grid
         button.append([])
         for c in range(dim): #height of grid
-
+            if grid[r][c].ltype == "flat":
+                color = "snow"
+            elif grid[r][c].ltype == "hill":
+                color = "light grey"
+            elif grid[r][c].ltype == "forest":
+                color = "lime green"
+            elif grid[r][c].ltype == "cave":
+                color = "grey22"
             #create blank clickable cells (functionality is in each cell)
             button[r].append(tk.Button(root, relief = SOLID, text = "", command =
                 lambda row = r, col = c: mouse_press(row, col), borderwidth = 1, bg =
-                "light grey", width = 2, height = 2))
+                color, width = 2, height = 2))
             button[r][-1].grid(row=r,column=c)
 
-    #solver for the minesweeper
-    sv.solver(grid, dim, button, root)
+    #solver for S&D
+    #sv.solver(grid, dim, button, root)
     
     root.mainloop()
     return
@@ -157,10 +107,9 @@ def main():
 
     #take in user input of grid dimension and blocked cell probability
     dim = int(input("Enter grid dimension: "))
-    num_mines = int(input("Enter number of mines: "))
     grid = []
-    if num_mines > dim*dim:
-        print("Number of mines exceed number of cells...terminating")
+    if dim < 0:
+        print("dimension less than 0...terminating")
         return
     score = [0]
 
@@ -181,11 +130,11 @@ def main():
     #grid[2][1].bomb = 1    
     #grid[2][2].bomb = 1    
 
-    #1)run mine_gen
-    grid = mine_gen(dim, num_mines)
+    #1)run mine_gen -- #2) run solver in visual to solve the maze (collect, update KB, take action) 
+    grid = map_gen(dim)
     grid_visual(dim, grid, score)
-    print("\nNumber of bombs detonated:", score[0])
-    print("Total number of bombs:", num_mines)
+    print("\nNumber of cells searched ", score[0])
+    
     #2)run agent to solve the maze (collect, update KB, take action) 
 
 
