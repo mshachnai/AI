@@ -1,302 +1,184 @@
-target is in: 1,0
-maxProb:0.07500000000000001
-maxProb:0.175
-queried: 0,1
+target is in: 0,1
+maxProb:0.25
+queried: 0,0
 +++++++++++
 pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.09090909090909093
-pos 0,1
 falseNegativeRate: 0.3
-newProb: 0.06363636363636363
+newProb: 0.09090909090909091
+pos 0,1
+falseNegativeRate: 0.7
+newProb: 0.30303030303030304
 pos 1,0
 falseNegativeRate: 0.7
-newProb: 0.09519230769230771
+newProb: 0.30303030303030304
 pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.2221153846153846
+falseNegativeRate: 0.7
+newProb: 0.30303030303030304
 +++++++++++
-maxProb:0.09090909090909093
-maxProb:0.09519230769230771
-maxProb:0.2221153846153846
+maxProb:0.09090909090909091
+maxProb:0.30303030303030304
+queried: 0,1
+false negative
++++++++++++
+pos 0,0
+falseNegativeRate: 0.3
+newProb: 0.09999999999999999
+pos 0,1
+falseNegativeRate: 0.7
+newProb: 0.2333333333333333
+pos 1,0
+falseNegativeRate: 0.7
+newProb: 0.3333333333333333
+pos 1,1
+falseNegativeRate: 0.7
+newProb: 0.3333333333333333
++++++++++++
+maxProb:0.09999999999999999
+maxProb:0.2333333333333333
+maxProb:0.3333333333333333
+queried: 1,0
++++++++++++
+pos 0,0
+falseNegativeRate: 0.3
+newProb: 0.11111111111111112
+pos 0,1
+falseNegativeRate: 0.7
+newProb: 0.25925925925925924
+pos 1,0
+falseNegativeRate: 0.7
+newProb: 0.25925925925925924
+pos 1,1
+falseNegativeRate: 0.7
+newProb: 0.3703703703703704
++++++++++++
+maxProb:0.11111111111111112
+maxProb:0.25925925925925924
+maxProb:0.3703703703703704
 queried: 1,1
 +++++++++++
 pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.11686706371502419
-pos 0,1
 falseNegativeRate: 0.3
-newProb: 0.0818069446005169
+newProb: 0.12500000000000003
+pos 0,1
+falseNegativeRate: 0.7
+newProb: 0.2916666666666667
 pos 1,0
 falseNegativeRate: 0.7
-newProb: 0.1223733003708282
+newProb: 0.2916666666666667
 pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.08566131025957972
+falseNegativeRate: 0.7
+newProb: 0.2916666666666667
 +++++++++++
-maxProb:0.11686706371502419
-maxProb:0.1223733003708282
-queried: 1,0
+maxProb:0.12500000000000003
+maxProb:0.2916666666666667
+queried: 0,1
 false negative
 +++++++++++
 pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.1331626120358515
-pos 0,1
 falseNegativeRate: 0.3
-newProb: 0.09321382842509603
+newProb: 0.13698630136986303
+pos 0,1
+falseNegativeRate: 0.7
+newProb: 0.22374429223744288
 pos 1,0
 falseNegativeRate: 0.7
-newProb: 0.09760563380281692
+newProb: 0.319634703196347
 pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.09954096609541997
+falseNegativeRate: 0.7
+newProb: 0.319634703196347
 +++++++++++
-maxProb:0.1331626120358515
-queried: 0,0
+maxProb:0.13698630136986303
+maxProb:0.22374429223744288
+maxProb:0.319634703196347
+queried: 1,0
 +++++++++++
 pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.10753323485967507
-pos 0,1
 falseNegativeRate: 0.3
-newProb: 0.11013221962267018
+newProb: 0.15151515151515157
+pos 0,1
+falseNegativeRate: 0.7
+newProb: 0.2474747474747475
 pos 1,0
 falseNegativeRate: 0.7
-newProb: 0.11532114150873833
+newProb: 0.2474747474747475
 pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.11760773830122047
+falseNegativeRate: 0.7
+newProb: 0.3535353535353536
 +++++++++++
-maxProb:0.10753323485967507
-maxProb:0.11013221962267018
-maxProb:0.11532114150873833
-maxProb:0.11760773830122047
+maxProb:0.15151515151515157
+maxProb:0.2474747474747475
+maxProb:0.3535353535353536
 queried: 1,1
 +++++++++++
 pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.12186556878077369
-pos 0,1
 falseNegativeRate: 0.3
-newProb: 0.12481095358955653
+newProb: 0.16949152542372886
+pos 0,1
+falseNegativeRate: 0.7
+newProb: 0.2768361581920904
 pos 1,0
 falseNegativeRate: 0.7
-newProb: 0.13069146967214143
+newProb: 0.2768361581920904
 pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.039984849167240766
-+++++++++++
-maxProb:0.12186556878077369
-maxProb:0.12481095358955653
-maxProb:0.13069146967214143
-queried: 1,0
-false negative
-+++++++++++
-pos 0,0
 falseNegativeRate: 0.7
-newProb: 0.14018678585244326
-pos 0,1
-falseNegativeRate: 0.3
-newProb: 0.14357497854356063
-pos 1,0
-falseNegativeRate: 0.7
-newProb: 0.10523769821515026
-pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.047059799071114405
+newProb: 0.2768361581920904
 +++++++++++
-maxProb:0.14018678585244326
-maxProb:0.14357497854356063
+maxProb:0.16949152542372886
+maxProb:0.2768361581920904
 queried: 0,1
-+++++++++++
-pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.16368833504425306
-pos 0,1
-falseNegativeRate: 0.3
-newProb: 0.05029336192188658
-pos 1,0
-falseNegativeRate: 0.7
-newProb: 0.12643360107498994
-pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.056538103392020915
-+++++++++++
-maxProb:0.16368833504425306
-queried: 0,0
-+++++++++++
-pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.1370085332207344
-pos 0,1
-falseNegativeRate: 0.3
-newProb: 0.062532658881531
-pos 1,0
-falseNegativeRate: 0.7
-newProb: 0.15720224190750107
-pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.07029710876582723
-+++++++++++
-maxProb:0.1370085332207344
-maxProb:0.15720224190750107
-queried: 1,0
 false negative
 +++++++++++
 pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.16256395072861288
-pos 0,1
 falseNegativeRate: 0.3
-newProb: 0.07419651782541632
+newProb: 0.18484288354898343
+pos 0,1
+falseNegativeRate: 0.7
+newProb: 0.21133703019100433
 pos 1,0
 falseNegativeRate: 0.7
-newProb: 0.13056699341999606
+newProb: 0.3019100431300062
 pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.08641574262022597
-+++++++++++
-maxProb:0.16256395072861288
-queried: 0,0
-+++++++++++
-pos 0,0
 falseNegativeRate: 0.7
-newProb: 0.1358847229099301
-pos 0,1
-falseNegativeRate: 0.3
-newProb: 0.09206905855431881
-pos 1,0
-falseNegativeRate: 0.7
-newProb: 0.16201811776036032
-pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.10723166397158189
+newProb: 0.3019100431300062
 +++++++++++
-maxProb:0.1358847229099301
-maxProb:0.16201811776036032
+maxProb:0.18484288354898343
+maxProb:0.21133703019100433
+maxProb:0.3019100431300062
 queried: 1,0
-false negative
 +++++++++++
 pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.16215711316664339
-pos 0,1
 falseNegativeRate: 0.3
-newProb: 0.10986998705538792
+newProb: 0.20325203252032525
+pos 0,1
+falseNegativeRate: 0.7
+newProb: 0.2323848238482385
 pos 1,0
 falseNegativeRate: 0.7
-newProb: 0.13534025596011554
+newProb: 0.2323848238482385
 pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.13293344456091657
-+++++++++++
-maxProb:0.16215711316664339
-queried: 0,0
-+++++++++++
-pos 0,0
 falseNegativeRate: 0.7
-newProb: 0.13547883618808715
-pos 0,1
-falseNegativeRate: 0.3
-newProb: 0.1362375688795187
-pos 1,0
-falseNegativeRate: 0.7
-newProb: 0.16782042064174185
-pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.16483600112403426
+newProb: 0.33197831978319786
 +++++++++++
-maxProb:0.13547883618808715
-maxProb:0.1362375688795187
-maxProb:0.16782042064174185
-queried: 1,0
-false negative
-+++++++++++
-pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.16280000080338755
-pos 0,1
-falseNegativeRate: 0.3
-newProb: 0.16371174234361696
-pos 1,0
-falseNegativeRate: 0.7
-newProb: 0.14116459639614146
-pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.206474393073022
-+++++++++++
-maxProb:0.16280000080338755
-maxProb:0.16371174234361696
-maxProb:0.206474393073022
+maxProb:0.20325203252032525
+maxProb:0.2323848238482385
+maxProb:0.33197831978319786
 queried: 1,1
 +++++++++++
 pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.20516036203777954
-pos 0,1
 falseNegativeRate: 0.3
-newProb: 0.20630933761244338
+newProb: 0.22573363431151247
+pos 0,1
+falseNegativeRate: 0.7
+newProb: 0.25808878856282924
 pos 1,0
 falseNegativeRate: 0.7
-newProb: 0.1778954518466242
+newProb: 0.25808878856282924
 pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.07805963333909989
+falseNegativeRate: 0.7
+newProb: 0.25808878856282924
 +++++++++++
-maxProb:0.20516036203777954
-maxProb:0.20630933761244338
+maxProb:0.22573363431151247
+maxProb:0.25808878856282924
 queried: 0,1
-+++++++++++
-pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.2584890710703617
-pos 0,1
-falseNegativeRate: 0.3
-newProb: 0.07798101227189562
-pos 1,0
-falseNegativeRate: 0.7
-newProb: 0.24037869958827657
-pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.10547696952122264
-+++++++++++
-maxProb:0.2584890710703617
-queried: 0,0
-+++++++++++
-pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.24401845298550237
-pos 0,1
-falseNegativeRate: 0.3
-newProb: 0.11971253869313135
-pos 1,0
-falseNegativeRate: 0.7
-newProb: 0.3690173227699579
-pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.161922953128865
-+++++++++++
-maxProb:0.24401845298550237
-maxProb:0.3690173227699579
-queried: 1,0
-false negative
-+++++++++++
-pos 0,0
-falseNegativeRate: 0.7
-newProb: 0.38672765797109
-pos 0,1
-falseNegativeRate: 0.3
-newProb: 0.18972397026596477
-pos 1,0
-falseNegativeRate: 0.7
-newProb: 0.4093806934176669
-pos 1,1
-falseNegativeRate: 0.3
-newProb: 0.39001561363265563
-+++++++++++
-maxProb:0.38672765797109
-maxProb:0.4093806934176669
-queried: 1,0
 target found!
-took 11 queries!
+took 7 queries!
