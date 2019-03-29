@@ -65,17 +65,57 @@ def grid_visual(dim, grid, score):
     
     #clickable function for minesweeper
     def mouse_press(row, col):
-        #if cell is target (and with correct probability is found) - show it
-        if grid[row][col].target == 1: #add probability clause for false negative : 
-            button[row][col].config(disabledforeground = "red", font = '40', command = 0, relief = SUNKEN, text = "X", state = DISABLED)
-            #keep track of number of cells explored
-            score[0] += 1
-        #else search failed - show it
-        else:
-            button[row][col].config(text = "F")
-            button[row][col].after(300, lambda: button[row][col].config(text = ""))
-            #keep track of number of cells explored
-            score[0] += 1
+        rand = random.random()
+        
+        if grid[row][col].ltype == "flat":
+            #if cell is target (and with correct probability is found) - show it
+            if grid[row][col].target == 1 and rand <= 0.9 :  
+                button[row][col].config(disabledforeground = "red", font = '40', command = 0, relief = SUNKEN, text = "X", state = DISABLED)
+                #keep track of number of cells explored
+                score[0] += 1
+            #else search failed - show it
+            else:
+                button[row][col].config(text = "F")
+                button[row][col].after(300, lambda: button[row][col].config(text = ""))
+                #keep track of number of cells explored
+                score[0] += 1
+        elif grid[row][col].ltype == "hill":
+            #if cell is target (and with correct probability is found) - show it
+            if grid[row][col].target == 1 and rand <= 0.7 : 
+                button[row][col].config(disabledforeground = "red", font = '40', command = 0, relief = SUNKEN, text = "X", state = DISABLED)
+                #keep track of number of cells explored
+                score[0] += 1
+            #else search failed - show it
+            else:
+                button[row][col].config(text = "F")
+                button[row][col].after(300, lambda: button[row][col].config(text = ""))
+                #keep track of number of cells explored
+                score[0] += 1
+        elif grid[row][col].ltype == "forest":
+            #if cell is target (and with correct probability is found) - show it
+            if grid[row][col].target == 1 and rand <= 0.3 : 
+                button[row][col].config(disabledforeground = "red", font = '40', command = 0, relief = SUNKEN, text = "X", state = DISABLED)
+                #keep track of number of cells explored
+                score[0] += 1
+            #else search failed - show it
+            else:
+                button[row][col].config(text = "F")
+                button[row][col].after(300, lambda: button[row][col].config(text = ""))
+                #keep track of number of cells explored
+                score[0] += 1
+        elif grid[row][col].ltype == "cave":
+            #if cell is target (and with correct probability is found) - show it
+            if grid[row][col].target == 1 and rand <= 0.1 : 
+                button[row][col].config(disabledforeground ="red", font = '40', command = 0, relief = SUNKEN, text = "X", state = DISABLED)
+                #keep track of number of cells explored
+                score[0] += 1
+            #else search failed - show it
+            else:
+                button[row][col].config(text = "F")
+                button[row][col].after(300, lambda: button[row][col].config(text = ""))
+                #keep track of number of cells explored
+                score[0] += 1
+
                 
     #create a grid of buttons with functionality
     button = []
