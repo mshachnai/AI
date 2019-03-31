@@ -156,20 +156,16 @@ def main():
         return
     score = [0]
 
+    grid = map_gen(dim)
     search_list = []
-    #1)run mine_gen -- #2) run solver in visual to solve the maze (collect, update KB, take action) 
+    search_list2 = []
+    #grid_visual(dim, grid, score)
+    #1)run mine_gen -- #2) run solver to compare between number of searches for each
+    #rule(collect, update KB, take action) 
     for i in range(RUNS):
-        grid = map_gen(dim)
-        #grid_visual(dim, grid, score)
         search_list.append(sv.seeker(grid, dim, rule = 1))
+        search_list2.append(sv.seeker(grid, dim, rule = 2))
     print("rule 1 searches: ", mean(search_list))
-
-    search_list.clear()
-    for i in range(RUNS):
-        grid = map_gen(dim)
-        #grid_visual(dim, grid, score)
-        search_list.append(sv.seeker(grid, dim, rule = 2))
-    
     print("rule 2 searches: ", mean(search_list))
 
     #3)plot agent stats with graphs

@@ -59,6 +59,7 @@ def update_kb(kb, grid, dim, x, y):
 
 #function to decide which cell to query on grid next(rule 1 and 2)
 def query_cell(kb, grid, dim, rule):
+    done = 0
     max_prob = 0
     #query cells that have highest chance of containing target (rule 1)
     if rule == 1:
@@ -66,8 +67,6 @@ def query_cell(kb, grid, dim, rule):
             for j in range(0,dim):
                 if kb[i][j].prob >= max_prob:
                     max_prob = kb[i][j].prob
-                    x = i
-                    y = j
 
     #query cells that have highest chance of finding target given it is contained in
     #cell (rule 2) 
@@ -77,26 +76,24 @@ def query_cell(kb, grid, dim, rule):
                 if kb[i][j].ltype == "flat":
                     if kb[i][j].prob * 0.9 >= max_prob:
                         max_prob = kb[i][j].prob
-                        x = i
-                        y = j
 
                 elif kb[i][j].ltype == "hill":
                     if kb[i][j].prob * 0.7 >= max_prob:
                         max_prob = kb[i][j].prob
-                        x = i
-                        y = j
                 
                 elif kb[i][j].ltype == "forest":
                     if kb[i][j].prob * 0.3 >= max_prob:
                         max_prob = kb[i][j].prob
-                        x = i
-                        y = j
                 
                 elif kb[i][j].ltype == "cave":
                     if kb[i][j].prob * 0.1 >= max_prob:
                         max_prob = kb[i][j].prob
-                        x = i
-                        y = j
+    while (not done):
+        x = random.randint(0,dim-1)  #random x coordinate
+        y = random.randint(0,dim-1)  #random y coordinate
+        if max_prob == kb[x][y].prob:
+            done = 1
+
     #print("querying :", x, y)
     #print(kb[i][j].prob)
     return x, y
