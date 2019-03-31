@@ -3,10 +3,11 @@ import matplotlib.pyplot as plt
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
+from statistics import mean
 import timeit as tm
 import random
 import copy
-#import prob_solver_minesweeper as sv
+import seeker as sv
 
 ######for later use
 #DEBUG is used for turning visuals on/off: (not complete yet)
@@ -15,7 +16,7 @@ import copy
 #2: will show plotting graphs
 #3: will show all visuals
 #DEBUG = 3 
-#RUNS = 1 #number of times each algorithm is run for timing
+RUNS = 50 #number of times each algorithm is run
 
 #S&D will be formed using a 2d array of struct named cell
 class Cell:
@@ -25,7 +26,8 @@ class Cell:
         self.target = target     #value to denote if target(1)/clear(0)
         self.coord = coord #this is touple to indicate cell coordinates
         self.visited = 0 #value to indicate if cell has been visited
-        self.prob = -1 #value to indicate probability of being a bomb
+        self.prob = -1.00 #value to indicate probability of being a
+        #target
 
 #function to generate S&D map - takes in dimension of map
 def map_gen(dim):
@@ -137,9 +139,10 @@ def grid_visual(dim, grid, score):
             button[r][-1].grid(row=r,column=c)
 
     #solver for S&D
-    #sv.solver(grid, dim, button, root)
+    #sv.seeker(grid, dim, button, root)
     
     root.mainloop()
+    print("\nNumber of cells searched ", score[0])
     return
 
 
@@ -153,30 +156,21 @@ def main():
         return
     score = [0]
 
-    ########this is for testing purposes only ########
-    #dim = 4
-    #num_mines = 3
-    #for i in range(0,dim):
-    #    grid.append([])
-    #    for j in range(0,dim):
-    #        grid[i].append(Cell(coord = (i,j)))
-    #grid[0][0].val = 0    
-    #grid[0][1].val = 0    
-    #grid[0][2].val = 0    
-    #grid[1][0].val = 1    
-    #grid[1][1].val = 2    
-    #grid[1][2].val = 2    
-    #grid[2][0].val = 1    
-    #grid[2][1].bomb = 1    
-    #grid[2][2].bomb = 1    
-
+    search_list = []
     #1)run mine_gen -- #2) run solver in visual to solve the maze (collect, update KB, take action) 
-    grid = map_gen(dim)
-    grid_visual(dim, grid, score)
-    print("\nNumber of cells searched ", score[0])
-    
-    #2)run agent to solve the maze (collect, update KB, take action) 
+    for i in range(RUNS):
+        grid = map_gen(dim)
+        #grid_visual(dim, grid, score)
+        search_list.append(sv.seeker(grid, dim, rule = 1))
+    print("rule 1 searches: ", mean(search_list))
 
+    search_list.clear()
+    for i in range(RUNS):
+        grid = map_gen(dim)
+        #grid_visual(dim, grid, score)
+        search_list.append(sv.seeker(grid, dim, rule = 2))
+    
+    print("rule 2 searches: ", mean(search_list))
 
     #3)plot agent stats with graphs
     #density vs. solvability
