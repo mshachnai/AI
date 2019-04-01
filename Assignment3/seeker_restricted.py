@@ -1,4 +1,4 @@
-#solver for search and destroy -- Rutgers University -- M.Shachnai
+#solver for search and destroy, restricted movement
 import random
 import search_and_destroy as SD
 
@@ -239,7 +239,6 @@ def seeker(grid, dim, button = [], root = None, rule = 1):
     #function to allow AI to query a button
     tot_actions = 1
     query = lambda x, y: button[x][y].invoke()
-    #rule = int(input("Enter rule(1 or 2): "))
 
     #1)create 2d grid that will represent agent knowledge base(KB)
     kb = []
