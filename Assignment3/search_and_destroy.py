@@ -8,6 +8,7 @@ import timeit as tm
 import random
 import copy
 import seeker as sv
+import Q2_seeker as sv2
 
 ######for later use
 #DEBUG is used for turning visuals on/off: (not complete yet)
@@ -160,14 +161,25 @@ def main():
     search_list = []
     search_list2 = []
     #grid_visual(dim, grid, score)
+
     #1)run mine_gen -- #2) run solver to compare between number of searches for each
     #rule(collect, update KB, take action) 
     for i in range(RUNS):
         search_list.append(sv.seeker(grid, dim, rule = 1))
         search_list2.append(sv.seeker(grid, dim, rule = 2))
-    print("rule 1 searches: ", mean(search_list))
-    print("rule 2 searches: ", mean(search_list))
+    print("rule 1 searches same map X 50 times: ", mean(search_list))
+    print("rule 2 searches same map X 50 times: ", mean(search_list2))
 
+    search_list.clear()
+    search_list2.clear()
+    for i in range(RUNS):
+        grid = map_gen(dim)
+        search_list.append(sv2.seeker(grid, dim, rule = 1))
+        search_list2.append(sv2.seeker(grid, dim, rule = 2))
+    print("rule 1 searches X 50 times (different map): ", mean(search_list))
+    print("rule 2 searches X 50 times (different map): ", mean(search_list2))
+    
+    
     #3)plot agent stats with graphs
     #density vs. solvability
     #array = [1,2,3,4]
