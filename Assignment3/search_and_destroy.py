@@ -9,6 +9,8 @@ import random
 import copy
 import seeker as sv
 import Q2_seeker as sv2
+import seeker_restricted as sv3
+import Q2_seeker_restricted as sv4
 
 ######for later use
 #DEBUG is used for turning visuals on/off: (not complete yet)
@@ -146,6 +148,27 @@ def grid_visual(dim, grid, score):
     print("\nNumber of cells searched ", score[0])
     return
 
+#function to change target location
+def update_target_loc(grid, dim, x, y):
+    for i in range(40):
+        #if neighboring cell is out of bound
+        row = random.randint(-1,1)
+        col = random.randint(-1,1)
+        if x+row < 0 or x+row >= dim or y+col < 0 or y+col >=dim or (x+row == x and
+                y+col == y):
+            continue
+        else:
+            grid[x][y].target = 0
+            grid[x+row][y+col].target = 1
+            return x+row, y+col
+
+
+#function to find target location
+def find_target(grid, dim):
+    for i in range(0,dim):
+        for j in range(0,dim):
+            if grid[i][j].target == 1:
+                return i, j
 
 def main():
 
@@ -156,8 +179,10 @@ def main():
         print("dimension less than 0...terminating")
         return
     score = [0]
+    #target coordinates
 
     grid = map_gen(dim)
+    x1, y1 = find_target(grid, dim)
     search_list = []
     search_list2 = []
     #grid_visual(dim, grid, score)
@@ -165,37 +190,30 @@ def main():
     #1)run mine_gen -- #2) run solver to compare between number of searches for each
     #rule(collect, update KB, take action) 
     for i in range(RUNS):
-        search_list.append(sv.seeker(grid, dim, rule = 1))
-        search_list2.append(sv.seeker(grid, dim, rule = 2))
+        search_list.append(sv4.seeker(grid, dim, rule = 1))
+        search_list2.append(sv4.seeker(grid, dim, rule = 2))
     print("rule 1 searches same map X 50 times: ", mean(search_list))
     print("rule 2 searches same map X 50 times: ", mean(search_list2))
 
     search_list.clear()
     search_list2.clear()
     for i in range(RUNS):
+        search_list.append(sv4.seeker(grid, dim, rule = 1))
+        search_list2.append(sv4.seeker(grid, dim, rule = 2))
+        #new target location for next round
+        x1, y1 = update_target_loc(grid, dim, x1, y1)
+    print("rule 1 searches same map X 50 times(initial target position moved): ", mean(search_list))
+    print("rule 2 searches same map X 50 times(initial target position moved): ", mean(search_list2))
+    
+    search_list.clear()
+    search_list2.clear()
+    for i in range(RUNS):
         grid = map_gen(dim)
-        search_list.append(sv2.seeker(grid, dim, rule = 1))
-        search_list2.append(sv2.seeker(grid, dim, rule = 2))
+        search_list.append(sv4.seeker(grid, dim, rule = 1))
+        search_list2.append(sv4.seeker(grid, dim, rule = 2))
     print("rule 1 searches X 50 times (different map): ", mean(search_list))
     print("rule 2 searches X 50 times (different map): ", mean(search_list2))
     
-    
-    #3)plot agent stats with graphs
-    #density vs. solvability
-    #array = [1,2,3,4]
-    #plt.plot(array, [1, 2, 3, 4], 'ro')
-    #plt.ylabel('density')
-    #plt.xlabel('solvability')
-    #if DEBUG == 2 or DEBUG == 3 :
-    #    plt.show()
-    #
-    ##density vs. shortest expected path
-    #plt.plot([1,2,3,4], [1, 2, 7, 8], 'ro')
-    #plt.ylabel('density')
-    #plt.xlabel('shortest expected path')
-    #if DEBUG == 2 or DEBUG == 3:
-    #    plt.show()"""
-
     return
 
 if __name__ == "__main__":
