@@ -3,10 +3,14 @@ import matplotlib.pyplot as plt
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
+from statistics import mean
 import timeit as tm
 import random
 import copy
-import prob_solver_minesweeper as sv
+import seeker as sv
+import Q2_seeker as sv2
+import seeker_restricted as sv3
+import Q2_seeker_restricted as sv4
 
 ######for later use
 #DEBUG is used for turning visuals on/off: (not complete yet)
@@ -15,196 +19,201 @@ import prob_solver_minesweeper as sv
 #2: will show plotting graphs
 #3: will show all visuals
 #DEBUG = 3 
-#RUNS = 1 #number of times each algorithm is run for timing
+RUNS = 50 #number of times each algorithm is run
 
-#minesweeper will be formed using a 2d array of struct named cell
+#S&D will be formed using a 2d array of struct named cell
 class Cell:
     #instance variables unique to each instance (with default arguments)
-    def __init__(self, val = -1, coord = (0,0), bomb = -1): 
-        self.val = val     #value to denote nearby bombs
-        self.bomb = bomb     #value to denote if bomb/clear
+    def __init__(self, ltype = "flat", coord = (0,0), target = 0): 
+        self.ltype = ltype     #value to denote land type 
+        self.target = target     #value to denote if target(1)/clear(0)
         self.coord = coord #this is touple to indicate cell coordinates
         self.visited = 0 #value to indicate if cell has been visited
-        self.prob = -1 #value to indicate probability of being a bomb
-        self.updated = 0 #value to indicate if cell prob has changed
-        #normalized? maybe add later
-    
-#function to add values to each cell according num of adjacent mines
-def cell_val(dim, grid = [], x = 0, y = 0, depth = 0):
-    #base cases
-    #check if depth search reached (this can vary if needed)
-    if depth == 2:
-        #print("depth = 2")
-        return 0
-    #check if X/Y coordinates are out of range 
-    elif x < 0 or x >= dim or y < 0 or y >= dim: 
-        #print("out of range")
-        return 0
-    #check if coordinate is a bomb and increment accordingly
-    elif grid[x][y].bomb == 1:
-        #print("this is bomb coordinate", X, Y)
-        return 1
-        
-    depth += 1
-    return 0 + cell_val(dim, grid, x-1, y-1, depth) + cell_val(dim, grid, x-1,y,     depth) + cell_val(dim, grid, x-1, y+1, depth) + cell_val(dim, grid, x, y-1, depth) + cell_val(dim, grid, x, y+1, depth ) + cell_val(dim, grid, x+1, y-1, depth ) + cell_val(dim, grid, x+1, y, depth ) + cell_val(dim, grid, x+1, y+1, depth )
+        self.prob = -1.00 #value to indicate probability of being a
+        #target
 
-
-#function to generate minesweeper - takes in dimension of grid, probability of blocked cell, and 2d array
-def mine_gen(dim, num_mines):
+#function to generate S&D map - takes in dimension of map
+def map_gen(dim):
     grid = []
-    count = 0 #number of mines
     random.seed()
 
-    #create 2d grid
+    #create 2d grid and assign land types to each (.2 flat, .3 hill, .3 forest, .2 #cave)
     for i in range(0,dim):
         grid.append([])
         for j in range(0,dim):
-            grid[i].append(Cell(coord = (i,j))) 
+            grid[i].append(Cell(coord = (i,j)))
+            rand = random.randint(1, 10)
+            if rand <= 2:
+                grid[i][j].ltype = "flat"
+            elif rand > 2 and rand <= 5:
+                grid[i][j].ltype = "hill"
+            elif rand > 5 and rand <= 8:
+                grid[i][j].ltype = "forest"
+            elif rand > 8 and rand <= 10:
+                grid[i][j].ltype = "cave"
 
-    #add bombs to random coordinates according to num of mines inputted
-    while count != num_mines : 
-        x = random.randint(0,dim-1)  #random X coordinate
-        y = random.randint(0,dim-1)  #random Y coordinate
+    #assign target randomly to one of the cells
+    x = random.randint(0,dim-1)  #random X coordinate
+    y = random.randint(0,dim-1)  #random Y coordinate
+    grid[x][y].target = 1 
         
-        #assign bombs randomly until number of bombs required is reached
-        if grid[x][y].bomb == 1 :  
-            continue
-        else :
-            grid[x][y].bomb = 1 
-        
-        #count number of mines placed
-        count += 1
-    
-    #add cell value based on adjacent bombs
-    for i in range(dim):
-        for j in range(dim):
-            grid[i][j].val = cell_val(dim, grid, x = i, y = j)
-    
     return grid
 
 
 
-#function to generate a visual of the grid and its solution if given
+#function to generate a visual of the grid and its solver if given
 def grid_visual(dim, grid, score):
 
     #initialize visual window and create grid layout using buttons
     root = tk.Tk()
-    root.title('Minesweeper')
-    #function to find all bordering zeroes and uncovering them
-    def zero_bfs(cell, q):
-        for i in range(-1,2):
-            for j in range(-1,2):
-                #print(cell.coord[0]+i,cell.coord[1]+j)
-                if cell.coord[0]+i < 0 or cell.coord[0]+i >= dim or cell.coord[1]+j < 0 or cell.coord[1]+j >=dim:
-                    #print("skip")
-                    continue
-                else:
-                    q.append(grid[cell.coord[0]+i][cell.coord[1]+j])
-
-    def invoke(x, y):
-        button[x][y].invoke()
-
+    root.title('Search & Destroy')
+    
     #clickable function for minesweeper
     def mouse_press(row, col):
-        #if bomb - show it
-        if grid[row][col].bomb == 1: 
-            button[row][col].config(bg = "red", disabledforeground = "black", command = 0, relief = SUNKEN, text = "X", state = DISABLED)
-            #keep track of number of bombs detonated
-            score[0] += 1
-        #if cell value != 0 - show it
-        elif grid[row][col].val > 0: 
-            button[row][col].config(relief = SUNKEN, text = grid[row][col].val, state = DISABLED, disabledforeground = "blue")
-        #if cell value = 0 - show it and uncover all bordering 0s
-        else:
-            #queue for uncovering each bordering zero with zero_bfs function
-            q = []
-            q.append(grid[row][col])
- 
-            while len(q) != 0:
-                cell = q.pop()
-                #print(button[cell.coord[0]][cell.coord[1]])
-                #print(cell.coord[0],cell.coord[1])
-                if button[cell.coord[0]][cell.coord[1]]['relief'] == "sunken":
-                    #print(button[cell.coord[0]][cell.coord[1]]['relief'] == 'sunken')
-                    pass
-                elif cell.val == 0:
-                    button[cell.coord[0]][cell.coord[1]].config(relief = SUNKEN, text = cell.val, state = DISABLED, disabledforeground = "blue")
-                    #run function to uncover all bordering 0s
-                    zero_bfs(cell,q)
-                else:
-                    button[cell.coord[0]][cell.coord[1]].config(relief = SUNKEN, text = cell.val, state = DISABLED, disabledforeground = "blue")
+        rand = random.random()
         
+        if grid[row][col].ltype == "flat":
+            #if cell is target (and with correct probability is found) - show it
+            if grid[row][col].target == 1 and rand <= 0.9 :  
+                button[row][col].config(disabledforeground = "red", font = '40', command = 0, relief = SUNKEN, text = "X", state = DISABLED)
+                #keep track of number of cells explored
+                score[0] += 1
+            #else search failed - show it
+            else:
+                button[row][col].config(text = "F")
+                button[row][col].after(300, lambda: button[row][col].config(text = ""))
+                #keep track of number of cells explored
+                score[0] += 1
+        elif grid[row][col].ltype == "hill":
+            #if cell is target (and with correct probability is found) - show it
+            if grid[row][col].target == 1 and rand <= 0.7 : 
+                button[row][col].config(disabledforeground = "red", font = '40', command = 0, relief = SUNKEN, text = "X", state = DISABLED)
+                #keep track of number of cells explored
+                score[0] += 1
+            #else search failed - show it
+            else:
+                button[row][col].config(text = "F")
+                button[row][col].after(300, lambda: button[row][col].config(text = ""))
+                #keep track of number of cells explored
+                score[0] += 1
+        elif grid[row][col].ltype == "forest":
+            #if cell is target (and with correct probability is found) - show it
+            if grid[row][col].target == 1 and rand <= 0.3 : 
+                button[row][col].config(disabledforeground = "red", font = '40', command = 0, relief = SUNKEN, text = "X", state = DISABLED)
+                #keep track of number of cells explored
+                score[0] += 1
+            #else search failed - show it
+            else:
+                button[row][col].config(text = "F")
+                button[row][col].after(300, lambda: button[row][col].config(text = ""))
+                #keep track of number of cells explored
+                score[0] += 1
+        elif grid[row][col].ltype == "cave":
+            #if cell is target (and with correct probability is found) - show it
+            if grid[row][col].target == 1 and rand <= 0.1 : 
+                button[row][col].config(disabledforeground ="red", font = '40', command = 0, relief = SUNKEN, text = "X", state = DISABLED)
+                #keep track of number of cells explored
+                score[0] += 1
+            #else search failed - show it
+            else:
+                button[row][col].config(text = "F")
+                button[row][col].after(300, lambda: button[row][col].config(text = ""))
+                #keep track of number of cells explored
+                score[0] += 1
+
+                
     #create a grid of buttons with functionality
     button = []
     for r in range(dim): #width of grid
         button.append([])
         for c in range(dim): #height of grid
-
+            if grid[r][c].ltype == "flat":
+                color = "snow"
+            elif grid[r][c].ltype == "hill":
+                color = "light grey"
+            elif grid[r][c].ltype == "forest":
+                color = "lime green"
+            elif grid[r][c].ltype == "cave":
+                color = "grey22"
             #create blank clickable cells (functionality is in each cell)
             button[r].append(tk.Button(root, relief = SOLID, text = "", command =
                 lambda row = r, col = c: mouse_press(row, col), borderwidth = 1, bg =
-                "light grey", width = 2, height = 2))
+                color, width = 2, height = 2))
             button[r][-1].grid(row=r,column=c)
 
-    #solver for the minesweeper
-    sv.solver(grid, dim, button, root)
+    #solver for S&D
+    #sv.seeker(grid, dim, button, root)
     
     root.mainloop()
+    print("\nNumber of cells searched ", score[0])
     return
 
+#function to change target location
+def update_target_loc(grid, dim, x, y):
+    for i in range(40):
+        #if neighboring cell is out of bound
+        row = random.randint(-1,1)
+        col = random.randint(-1,1)
+        if x+row < 0 or x+row >= dim or y+col < 0 or y+col >=dim or (x+row == x and
+                y+col == y):
+            continue
+        else:
+            grid[x][y].target = 0
+            grid[x+row][y+col].target = 1
+            return x+row, y+col
+
+
+#function to find target location
+def find_target(grid, dim):
+    for i in range(0,dim):
+        for j in range(0,dim):
+            if grid[i][j].target == 1:
+                return i, j
 
 def main():
 
     #take in user input of grid dimension and blocked cell probability
     dim = int(input("Enter grid dimension: "))
-    num_mines = int(input("Enter number of mines: "))
     grid = []
-    if num_mines > dim*dim:
-        print("Number of mines exceed number of cells...terminating")
+    if dim < 0:
+        print("dimension less than 0...terminating")
         return
     score = [0]
+    #target coordinates
 
-    ########this is for testing purposes only ########
-    #dim = 4
-    #num_mines = 3
-    #for i in range(0,dim):
-    #    grid.append([])
-    #    for j in range(0,dim):
-    #        grid[i].append(Cell(coord = (i,j)))
-    #grid[0][0].val = 0    
-    #grid[0][1].val = 0    
-    #grid[0][2].val = 0    
-    #grid[1][0].val = 1    
-    #grid[1][1].val = 2    
-    #grid[1][2].val = 2    
-    #grid[2][0].val = 1    
-    #grid[2][1].bomb = 1    
-    #grid[2][2].bomb = 1    
+    grid = map_gen(dim)
+    x1, y1 = find_target(grid, dim)
+    search_list = []
+    search_list2 = []
+    #grid_visual(dim, grid, score)
 
-    #1)run mine_gen
-    grid = mine_gen(dim, num_mines)
-    grid_visual(dim, grid, score)
-    print("\nNumber of bombs detonated:", score[0])
-    print("Total number of bombs:", num_mines)
-    #2)run agent to solve the maze (collect, update KB, take action) 
+    #1)run mine_gen -- #2) run solver to compare between number of searches for each
+    #rule(collect, update KB, take action) 
+    for i in range(RUNS):
+        search_list.append(sv4.seeker(grid, dim, rule = 1))
+        search_list2.append(sv4.seeker(grid, dim, rule = 2))
+    print("rule 1 searches same map X 50 times: ", mean(search_list))
+    print("rule 2 searches same map X 50 times: ", mean(search_list2))
 
-
-    #3)plot agent stats with graphs
-    #density vs. solvability
-    #array = [1,2,3,4]
-    #plt.plot(array, [1, 2, 3, 4], 'ro')
-    #plt.ylabel('density')
-    #plt.xlabel('solvability')
-    #if DEBUG == 2 or DEBUG == 3 :
-    #    plt.show()
-    #
-    ##density vs. shortest expected path
-    #plt.plot([1,2,3,4], [1, 2, 7, 8], 'ro')
-    #plt.ylabel('density')
-    #plt.xlabel('shortest expected path')
-    #if DEBUG == 2 or DEBUG == 3:
-    #    plt.show()"""
-
+    search_list.clear()
+    search_list2.clear()
+    for i in range(RUNS):
+        search_list.append(sv4.seeker(grid, dim, rule = 1))
+        search_list2.append(sv4.seeker(grid, dim, rule = 2))
+        #new target location for next round
+        x1, y1 = update_target_loc(grid, dim, x1, y1)
+    print("rule 1 searches same map X 50 times(initial target position moved): ", mean(search_list))
+    print("rule 2 searches same map X 50 times(initial target position moved): ", mean(search_list2))
+    
+    search_list.clear()
+    search_list2.clear()
+    for i in range(RUNS):
+        grid = map_gen(dim)
+        search_list.append(sv4.seeker(grid, dim, rule = 1))
+        search_list2.append(sv4.seeker(grid, dim, rule = 2))
+    print("rule 1 searches X 50 times (different map): ", mean(search_list))
+    print("rule 2 searches X 50 times (different map): ", mean(search_list2))
+    
     return
 
 if __name__ == "__main__":
