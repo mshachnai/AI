@@ -8,16 +8,16 @@ class Layer:
         #initialize all weights to 1 for now
         self.weights = [[1 for i in range(MCol)] for j in range(MRow)]
         
-    def forwardPropagate(Input):
-        #calculate effect of weights on input
-        weights_on_input= np.matmul(self.weights, Input)
-        
-        func = self.sigmoid #choose the function
-        return map(func, weights_on_input) #apply the function
+        def forwardPropagate(Input):
+            #calculate effect of weights on input
+            weights_on_input= np.matmul(self.weights, Input)
+            
+            func = self.sigmoid #choose the function
+            return map(func, weights_on_input) #apply the function
 
-    def sigmoid(x):
-        return 1/(1+ math.exp(-1 *x))
-`
+        def sigmoid(x):
+            return 1/(1+ math.exp(-1 *x))
+
 class Net:
     def __init__(self, hWidth, hDepth):
         self.layers = []
