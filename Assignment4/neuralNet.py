@@ -1,22 +1,35 @@
 from PIL import Image
 import numpy as np
 import math 
+
+
+
+def sigmoid(x):
+    return 1/(1+ math.exp(-1 *x))
+
 class Layer:
     def __init__(self, MRow, MCol):
 
         #matrix is size matRow, matCol
         #initialize all weights to 1 for now
         self.weights = [[1 for i in range(MCol)] for j in range(MRow)]
-        
+        self.derivs = [[1 for i in range(MCol)] for j in range(MRow)]
+        self.pre_sigmoid_output = []
+        self.post_sigmoid_output = []
+
+        self.col = MCol
+        self.row = MRow
+
     def forwardPropagate(Input):
         #calculate effect of weights on input
         weights_on_input= np.matmul(self.weights, Input)
+        self.pre_sigmoid_output = weights_on_input
         
-        func = self.sigmoid #choose the function
-        return map(func, weights_on_input) #apply the function
+        func = sigmoid #choose the function
+        sigmoid_applied =  map(func, weights_on_input) #apply the function
+        self.post_sigmoid_output = sigmoid_applied
+        return sigmoid_applied
 
-    def sigmoid(x):
-        return 1/(1+ math.exp(-1 *x))
 `
 class Net:
     def __init__(self, hWidth, hDepth):
@@ -45,9 +58,40 @@ class Net:
             vec = layer.forwardPropagate(vec) 
         return vec
 
-    def backPropagate():
-        pass
+    def backPropagate(res, actual):
+        #res is the output vector from feed-forward stage
 
+        firstLayer = None #set this later obviously
+
+        for i in range(self.row):
+            for j in range(self.col):
+                layers[len(layers) -1].derivs[i][j] = derivFirstlayer(i,j, res, actual)
+
+    def derivFirstLayer(i,j, res, actual): #i sort of refers to output node, j to input.
+        lastLayerNum = len(self.layers)
+        
+        dL_dO = dLoss_dOut(res, actual)
+        dO_dI = dSigmaFn(layers[lastLayerNum -1].pre_sigmoid_output[i])
+        dI_dW = layers[lastLayerNum-2].post_sigmoid_output[j]
+        
+        return dL_dO * dO_dI * dI_dW
+
+    def dLoss_dOut(res, actual):
+        ret = []
+
+        size = len(res)
+        for i in range(len(res)):
+            ret.append((float)(1/size) * (res[i] - actual[i]))
+        return ret
+
+    def dSigmaFn(I): #"I" is the output before sigmoid is applied to it 
+        ret = []
+        for i in range(len(I)):
+            ret.append(sigmoid(I[i]) * (1 - sigmoid(I[i])))
+
+        return ret
+
+    
 
     def runNetOneRound(vec):
         result = self.feedForwardAllLayers(vec)
