@@ -1,135 +1,95 @@
+import os
 from PIL import Image
 import numpy as np
-import math 
-class Layer:
-    def __init__(self, MRow, MCol):
 
-        #matrix is size matRow, matCol
-        #initialize all weights to 1 for now
-        self.weights = [[1 for i in range(MCol)] for j in range(MRow)]
-        
-    def forwardPropagate(Input):
-        #calculate effect of weights on input
-        weights_on_input= np.matmul(self.weights, Input)
-        
-        func = self.sigmoid #choose the function
-        return map(func, weights_on_input) #apply the function
+def sigmoid(x):
+    return 1.0/(1+ np.exp(-x))
 
-    def sigmoid(x):
-        return 1/(1+ math.exp(-1 *x))
-`
-class Net:
-    def __init__(self, hWidth, hDepth):
-        self.layers = []
-        self.buildNet(hWidth, hDepth)
+def sigmoid_derivative(x):
+    return x * (1.0 - x)
 
+class NeuralNetwork:
+    def __init__(self, x, y):
+        self.input      = x
+        self.weights1   = np.random.rand(self.input.shape[1],4) 
+        self.weights2   = np.random.rand(4,1)                 
+        self.y          = y
+        self.output     = np.zeros(self.y.shape)
 
-    def buildNet(hiddenWidth, hiddenDepth):
-        #input is the 8 pixels surrounding the pixel that we're trying to predict + that pixel = 9
-        #so the input layer will have 9 nodes
-        #each subsequent layer will have <hiddenWidth> nodes 
-        #we represent this by coding a 20 x 9 matrix into our first "Layer" object.
-        firstLayer = Layer(hiddenWidth, 0)
-        self.layers.append(firstLayer)
+    def feedforward(self):
+        self.layer1 = sigmoid(np.dot(self.input, self.weights1))
+        self.output = sigmoid(np.dot(self.layer1, self.weights2))
 
-        for i in range(hiddenDepth-1):
-            layer = Layer(hiddenWidth, hiddenWidth)
-            self.layers.append(layer)
+    def backprop(self):
+        # application of the chain rule to find derivative of the loss function with respect to weights2 and weights1
+        d_weights2 = np.dot(self.layer1.T, (2*(self.y - self.output) * sigmoid_derivative(self.output)))
+        d_weights1 = np.dot(self.input.T,  (np.dot(2*(self.y - self.output) * sigmoid_derivative(self.output), self.weights2.T) * sigmoid_derivative(self.layer1)))
 
-        #we need 3 output nodes for R,G,B 
-        lastLayer = Layer(3,20)
-        self.layers.append(lastLayer)
+        # update the weights with the derivative (slope) of the loss function
+        self.weights1 += d_weights1
+        self.weights2 += d_weights2
 
-    def feedForwardAllLayers(vec):
-        for layer in self.layers:
-            vec = layer.forwardPropagate(vec) 
-        return vec
-
-    def backPropagate():
-        pass
-
-
-    def runNetOneRound(vec):
-        result = self.feedForwardAllLayers(vec)
-        self.backPropagate()    
-
-#returns a matrix of values
-def getTrainingDataFromImage(imgName):
-    #open image 
-    img = Image.open(imgName)
-    #turn image to grayscale
-    grey = img.convert('L')
-
-    #convert image to matrix (numpy array)
-    greyMatrix = np.array(grey)
-    (row,col) = greyMatrix.shape
-
-
-    #turn image into RGB
-    img_rgb = img.convert('RGB')
-    
-    colorMatrix = [[0 for i in range(col)] for j in range(row)]
-
-    for i in range(row):
-        for j in range(col):
-            r, g, b = img_rgb.getpixel((j, i)) #TODO: double check that this works 
-            colorMatrix[i][j] = (r,g,b)
-
-    #print(colorRes)
-    #print(greyMatrix)
-
-    #ok, so we have rgb/grey values in an array!
-    #every "window" where P is the pixel we're trying to predict will contain data formatted as follows:
-    """
-    C is the color value in the center. 
-    the grey matrix window centered at 9 looks like:
-    1 | 2 | 3
-    _   _   _
-    8 | 9 | 4   => (C,[1,2,3,4,5,6,7,8,9])
-    _   _   _
-    7 | 6 | 5
-
-    TODO: since this probably won't predict very well, maybe increase window size
-    """
-    trainingData = [[0 for i in range(col-1)] for j in range(row-1)]
-    for i in range(1,row-1):
-        for j in range(1,col-1):
-            colorVal = colorMatrix[i][j]
-            greyVals = [greyMatrix[i-1][j-1],
-                            greyMatrix[i-1][j],
-                            greyMatrix[i-1][j+1],
-                            greyMatrix[i][j+1],
-                            greyMatrix[i+1][j+1],
-                            greyMatrix[i+1][j],
-                            greyMatrix[i+1][j-1],
-                            greyMatrix[i][j-1],
-                            greyMatrix[i][j]]
-            greyVals = np.transpose(greyVals) 
-            trainingData[i][j] = (colorVal, greyVals)
-
-    """
-    #test if the previous logic works
-    X = [[1,2,3],
-        [8,100,4],
-        [7,6,5]]
-
-    i = 1
-    j = 1
-    test = (X[i-1][j-1],
-                    X[i-1][j],
-                    X[i-1][j+1],
-                    X[i][j+1],
-                    X[i+1][j+1],
-                    X[i+1][j],
-                    X[i+1][j-1],
-                    X[i][j-1])
-    print(test)
-    """
-    return trainingData
 
 if __name__ == "__main__":
-    trainingData = getTrainingDataFromImage('simpson.png')
+
+    nn = NeuralNetwork( np.array([[0,0,0],
+                        [0,0,0],
+                        [0,0,0]]),
+                       
+                        np.array([[0],[0],[0]]))
+    
+    photo = Image.open('1.jpg') #your image
+    photo = photo.convert('RGB')
+    grayVersion = photo.convert('L')
+    grayMatrix = np.array(grayVersion)
+
+    width = photo.size[0] #define W and H
+    height = photo.size[1]
+
+
+    #training our NN with all the pixel sets of a certain image
+    for j in range(1, height-1): #each pixel's coordinates
+        row = ""
+        for i in range(1, width-1):
+
+            RGB = photo.getpixel((i,j))
+            R,G,B = RGB  #current pixel's RGB value
+
+            inputMatrix = np.array([[grayMatrix[j-1][i-1],grayMatrix[j-1][i],grayMatrix[j-1][i+1]],
+                                    [grayMatrix[j][i-1],grayMatrix[j][i],grayMatrix[j][i+1]],
+                                    [grayMatrix[j+1][i-1],grayMatrix[j+1][i],grayMatrix[j+1][i+1]]])
+            actualRGB = np.array([[R],[G],[B]])
+            nn.input = inputMatrix
+            nn.y = actualRGB
+            nn.feedforward()
+            nn.backprop()
 
 
 
-            
+    #running our NN on a given input
+    photo = Image.open('2.jpg') # openning the image
+    grayVersion = photo.convert('L')
+    grayMatrix = np.array(grayVersion)
+
+    width = photo.size[0] #define W and H
+    height = photo.size[1]
+
+    finalSolution = [[[0,0,0] for x in range(width)] for y in range(height)]
+
+    
+    for i in range(1, height-1): #each pixel's coordinates
+        row = ""
+        for j in range(1, width-1):
+
+            inputMatrix = np.array([[grayMatrix[i-1][j-1],grayMatrix[i-1][j],grayMatrix[i-1][j+1]],
+                                    [grayMatrix[i][j-1],grayMatrix[i][j],grayMatrix[i][j+1]],
+                                    [grayMatrix[i+1][j-1],grayMatrix[i+1][j],grayMatrix[i+1][j+1]]])
+            nn.feedforward()
+            finalSolution[i][j] = np.array(nn.output)
+
+    #c_array = np.asarray(c)
+    np.asarray(finalSolution)
+    ime = Image.fromarray(finalSolution)
+    #grey = np.asarray(Image.fromarray(finalSolution))
+    #grey.save('output.png')
+    #grey.show()
