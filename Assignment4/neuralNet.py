@@ -33,31 +33,31 @@ if __name__ == "__main__":
                         [0,0,0]]),
                        
                         np.array( [0,0,0] )   )
-    
-    photo = Image.open('1.jpg')
-    photo = photo.convert('RGB')
-    grayVersion = photo.convert('L')
-    grayMatrix = np.array(grayVersion)
+    for k in range(20):
+        photo = Image.open('%d.jpg' % k)
+        photo = photo.convert('RGB')
+        grayVersion = photo.convert('L')
+        grayMatrix = np.array(grayVersion)
 
-    width = photo.size[0] #define W and H
-    height = photo.size[1]
+        width = photo.size[0] #define W and H
+        height = photo.size[1]
 
-    #training our NN with all the pixel sets of a certain image
-    for j in range(1, height-1): #each pixel's coordinates
+        #training our NN with all the pixel sets of a certain image
+        for j in range(1, height-1): #each pixel's coordinates
 
-        for i in range(1, width-1):
+            for i in range(1, width-1):
 
-            RGB = photo.getpixel((i,j))
-            R,G,B = RGB  #current pixel's RGB value
+                RGB = photo.getpixel((i,j))
+                R,G,B = RGB  #current pixel's RGB value
 
-            inputMatrix = np.array([[grayMatrix[j-1][i-1],grayMatrix[j-1][i],grayMatrix[j-1][i+1]],
-                                    [grayMatrix[j][i-1],grayMatrix[j][i],grayMatrix[j][i+1]],
-                                    [grayMatrix[j+1][i-1],grayMatrix[j+1][i],grayMatrix[j+1][i+1]]])
-            actualRGB = np.array([R,G,B])
-            nn.input = inputMatrix
-            nn.y = actualRGB
-            nn.feedforward()
-            nn.backprop()
+                inputMatrix = np.array([[grayMatrix[j-1][i-1],grayMatrix[j-1][i],grayMatrix[j-1][i+1]],
+                                        [grayMatrix[j][i-1],grayMatrix[j][i],grayMatrix[j][i+1]],
+                                        [grayMatrix[j+1][i-1],grayMatrix[j+1][i],grayMatrix[j+1][i+1]]])
+                actualRGB = np.array([R,G,B])
+                nn.input = inputMatrix
+                nn.y = actualRGB
+                nn.feedforward()
+                nn.backprop()
 
     #running our NN on a given input
     photo = Image.open('2.jpg')
@@ -81,8 +81,6 @@ if __name__ == "__main__":
             finalSolution[i][j][1] = nn.output[1][0] #(b)
             finalSolution[i][j][2] = nn.output[2][0] #(g)
             
-
-    print(finalSolution)
     grey = Image.fromarray(finalSolution, mode="RGB")
     grey.save('output.png')
     grey.show()
