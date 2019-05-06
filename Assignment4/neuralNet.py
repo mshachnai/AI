@@ -19,12 +19,7 @@ class Layer:
 
     def forwardPropagate(self, Input):
         #calculate effect of weights on input
-        print("input is:")
-        print(Input)
-
-        print("self.weights is")
-        printM(self.weights)
-        weights_on_input= np.matmul(self.weights, Input)
+        weights_on_input= np.dot(self.weights, Input)
         
         func = sigmoid #choose the function
         return list(map(func, weights_on_input)) #apply the function
@@ -48,8 +43,6 @@ class Net:
             layer = Layer(hiddenWidth, hiddenWidth)
             self.layers.append(layer)
 
-        print("what the shit")
-        print(self.layers[2].weights)
 
         #we need 3 output nodes for R,G,B 
         lastLayer = Layer(3,hiddenWidth)
@@ -81,7 +74,7 @@ class Net:
         print("Hidden layer loss Calculating")
         layer = self.layers[layerNum]
         nextLayer = self.layers[layerNum+1]
-        X = np.matmul(np.transpose(nextLayer.weights), nextLayer.error)
+        X = np.dot(np.transpose(nextLayer.weights), nextLayer.error)
         onesVec = [1 for i in range(len(layer.activation))]
         NLD = np.multiply(layer.activation, np.subtract(onesVec,layer.activation))
         layer.error = np.multiply(X, NLD)
@@ -92,10 +85,18 @@ class Net:
 
         #do some weird off-by-one thing, sorry
         for k in range(len(self.layers)):
+            print("bruh")
             layer = self.layers[k]
-            PROD = np.matmul(layer.error, np.transpose(prevLayerActivation))
+            #I have reason to believe that the video is wrong about this equation
+            print(prevLayerActivation)
+            print(layer.error)
+            #PROD = np.dot(layer.error, np.transpose(prevLayerActivation)) 
+            PROD = np.dot(np.transpose([layer.error]), [prevLayerActivation])
+            #printM(PROD)
             layer.gradientMatrix = np.add(layer.gradientMatrix, PROD)
             prevLayerActivation = layer.activation
+            print(layer.activation)
+            print("??")
 
     def clearGradientMatrices(self):
         for layer in self.layers:
