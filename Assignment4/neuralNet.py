@@ -4,14 +4,14 @@ import numpy as np
 import math 
 
 TEST_SIZE = 200 #test NN on smaller pic before we commit to a 1000 pixel monstrosity
-SET_SIZE = 50 #training batch size, i guess
+SET_SIZE = 5 #training batch size, i guess
 LAMBDA = 0 #minimize loss? 0 =danger of overfitting
 class Layer:
     def __init__(self, MRow, MCol):
 
         #matrix is size matRow, matCol
-        #initialize all weights to 1 for now
-        self.weights = [[1 for i in range(MCol)] for j in range(MRow)]
+        #initialize all weights to 1 for now. TODO: random weights?
+        self.weights = [[0.5 for i in range(MCol)] for j in range(MRow)]
         self.activation = [0 for i in range(MRow)] #i think this is total output of node
         self.error = [0 for i in range(MRow)]
         self.deriv = [[1 for i in range(MCol)] for j in range(MRow)]
@@ -20,7 +20,6 @@ class Layer:
     def forwardPropagate(self, Input):
         #calculate effect of weights on input
         weights_on_input= np.dot(self.weights, Input)
-        
         func = sigmoid #choose the function
         return list(map(func, weights_on_input)) #apply the function
 
@@ -49,9 +48,16 @@ class Net:
         self.layers.append(lastLayer)
 
     def feedForwardAllLayers(self, vec): #in the beginning, vec is the input vector
-        for layer in self.layers:
+        for i in range(len(self.layers)):
+            layer = self.layers[i]
             vec = layer.forwardPropagate(vec) 
             layer.activation = vec
+            """ 
+            print("feedForwardAllLayers: layer: " + str(i))
+            print("activation is:")
+            print(layer.activation)
+            input()
+            """
         return vec
 
     def backPropagate(self, actualVals, inputVec): #actualVals is the desired output vector
@@ -69,15 +75,33 @@ class Net:
         print("Output layer loss Calculating -> check value later")
         layer = self.layers[layerNum]
         layer.error = np.subtract(layer.activation, actualVals)
+      
+        """
+        #TODO: is this right? should i do mean-square err?
+        print("layer number " + str(layerNum))
+        print(layer.error)
+        input()
+        """
 
     def calculateHiddenLayerLoss(self, layerNum): #sets layer.error
-        print("Hidden layer loss Calculating")
+        print("Hidden layer loss Calculating -> check value")
         layer = self.layers[layerNum]
         nextLayer = self.layers[layerNum+1]
         X = np.dot(np.transpose(nextLayer.weights), nextLayer.error)
         onesVec = [1 for i in range(len(layer.activation))]
         NLD = np.multiply(layer.activation, np.subtract(onesVec,layer.activation))
+        """
+        print("NLD")
+        printM(NLD)
+        print("layer activation")
+        printM(layer.activation)
+        """
         layer.error = np.multiply(X, NLD)
+        """
+        print("layer number " + str(layerNum))
+        print(layer.error)
+        input()
+        """
 
     def calculateDeltas(self, inputVec):
         print("Gradient Calculating")
@@ -85,18 +109,34 @@ class Net:
 
         #do some weird off-by-one thing, sorry
         for k in range(len(self.layers)):
-            print("bruh")
+            
             layer = self.layers[k]
+            """
             #I have reason to believe that the video is wrong about this equation
-            print(prevLayerActivation)
+            #print(prevLayerActivation)
+            print("layer error: ")
             print(layer.error)
+            """
+
             #PROD = np.dot(layer.error, np.transpose(prevLayerActivation)) 
             PROD = np.dot(np.transpose([layer.error]), [prevLayerActivation])
-            #printM(PROD)
+            #TODO: yea so in the middle layer, both of these vectors have the
+            #same numbers in all positions, so the layer isn't training properly
             layer.gradientMatrix = np.add(layer.gradientMatrix, PROD)
             prevLayerActivation = layer.activation
+
+            """
+            print("calculateDeltas: at layer " + str(k))
+            print("PROD is:")
+            printM(PROD)
+            print("layer.gradientMatrix is: " )
+            printM(layer.gradientMatrix)
+        
+            print("activation: ")
             print(layer.activation)
             print("??")
+            input()
+            """
 
     def clearGradientMatrices(self):
         for layer in self.layers:
@@ -105,12 +145,17 @@ class Net:
                 for j in range(len(uwu[0])):
                     layer.gradientMatrix[i][j] = 0
 
-    def gradientDescent():
+    def gradientDescent(self):
         print("Gradient Descending")
         for layer in self.layers:
             layer.gradientMatrix = np.multiply(layer.gradientMatrix, (float)(1/SET_SIZE))
-            layer.weightMatrix = np.subtract(layer.weightMatrix, layer.gradientMatrix)
-
+            layer.weights = np.subtract(layer.weights, layer.gradientMatrix)
+            
+            """ 
+            print("gradientMatrix: ")
+            printM(layer.gradientMatrix)
+            input()
+            """
 
     def runNetOneSet(self,Set):
         for data in Set:
@@ -119,6 +164,11 @@ class Net:
             print("Back Propagating")
             self.backPropagate(data[0], data[1])
             print("Set Complete!")
+        
+        self.gradientDescent()
+        print("In runNetOneSet: Total Error: ")
+        print((self.layers[len(self.layers)-1]).error)
+        input()
 
 
 def sigmoid(x):
@@ -206,10 +256,8 @@ def getTrainingDataFromImage(imgName):
 def train():
     #create neural net
     print("Created neural net")
-    net = Net(6,4)
-    print("nn")
+    net = Net(6,2)
 
-    print(net.layers[1].weights)
     #get a matrix of training data
     trainingData = getTrainingDataFromImage('simpson.png')
     sets = divideTrainingDataIntoSets(trainingData)
