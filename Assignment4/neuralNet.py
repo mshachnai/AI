@@ -1,7 +1,9 @@
+from util import printM
 from PIL import Image
 import numpy as np
 import math 
 
+TEST_SIZE = 200 #test NN on smaller pic before we commit to a 1000 pixel monstrosity
 SET_SIZE = 50 #training batch size, i guess
 LAMBDA = 0 #minimize loss? 0 =danger of overfitting
 class Layer:
@@ -15,65 +17,77 @@ class Layer:
         self.deriv = [[1 for i in range(MCol)] for j in range(MRow)]
         self.gradientMatrix = [[0 for i in range(MCol)] for j in range(MRow)]
 
-    def forwardPropagate(Input):
+    def forwardPropagate(self, Input):
         #calculate effect of weights on input
+        print("input is:")
+        print(Input)
+
+        print("self.weights is")
+        printM(self.weights)
         weights_on_input= np.matmul(self.weights, Input)
         
-        func = self.sigmoid #choose the function
-        return map(func, weights_on_input) #apply the function
+        func = sigmoid #choose the function
+        return list(map(func, weights_on_input)) #apply the function
 
-    def sigmoid(x):
-        return 1/(1+ math.exp(-1 *x))
-`
+
 class Net:
     def __init__(self, hWidth, hDepth):
         self.layers = []
         self.buildNet(hWidth, hDepth)
 
 
-    def buildNet(hiddenWidth, hiddenDepth):
+    def buildNet(self,hiddenWidth, hiddenDepth):
         #input is the 8 pixels surrounding the pixel that we're trying to predict + that pixel = 9
         #so the input layer will have 9 nodes
         #each subsequent layer will have <hiddenWidth> nodes 
         #we represent this by coding a 20 x 9 matrix into our first "Layer" object.
-        firstLayer = Layer(hiddenWidth, 0)
+        firstLayer = Layer(hiddenWidth, 9)
         self.layers.append(firstLayer)
 
         for i in range(hiddenDepth-1):
             layer = Layer(hiddenWidth, hiddenWidth)
             self.layers.append(layer)
 
+        print("what the shit")
+        print(self.layers[2].weights)
+
         #we need 3 output nodes for R,G,B 
-        lastLayer = Layer(3,20)
+        lastLayer = Layer(3,hiddenWidth)
         self.layers.append(lastLayer)
 
-    def feedForwardAllLayers(vec): #in the beginning, vec is the input vector
+    def feedForwardAllLayers(self, vec): #in the beginning, vec is the input vector
         for layer in self.layers:
             vec = layer.forwardPropagate(vec) 
+            layer.activation = vec
         return vec
 
-    def backPropagate(actualVals, inputVec): #actualVals is the desired output vector
+    def backPropagate(self, actualVals, inputVec): #actualVals is the desired output vector
+        self.clearGradientMatrices()
         numLayers = len(self.layers) #number of trainable layers
-        calculateLastLayerLoss( numLayers -1, actualVals)
+        self.calculateLastLayerLoss( numLayers -1, actualVals)
         for i in range(numLayers -1):  #numlayers = 3 (for i in range(2)) -> [0,1]
-            calculateHiddenLayerLoss(numLayers-2-i) #3-2-0 = 1 3-2-1 = 0 OK
+            self.calculateHiddenLayerLoss(numLayers-2-i) #3-2-0 = 1 3-2-1 = 0 OK
 
         #now the loss (err) for all layers has been calculated. 
         #calculate the gradients.
-        calculateDeltas(inputVec)
+        self.calculateDeltas(inputVec)
 
-    def calculateLastLayerLoss(layerNum, actualVals):
+    def calculateLastLayerLoss(self, layerNum, actualVals):
+        print("Output layer loss Calculating -> check value later")
         layer = self.layers[layerNum]
         layer.error = np.subtract(layer.activation, actualVals)
 
-    def calculateHiddenLayerLoss(layerNum): #sets layer.error
+    def calculateHiddenLayerLoss(self, layerNum): #sets layer.error
+        print("Hidden layer loss Calculating")
         layer = self.layers[layerNum]
         nextLayer = self.layers[layerNum+1]
         X = np.matmul(np.transpose(nextLayer.weights), nextLayer.error)
-        NLD = np.multiply(layer.activation, (1 - layer.activation))
+        onesVec = [1 for i in range(len(layer.activation))]
+        NLD = np.multiply(layer.activation, np.subtract(onesVec,layer.activation))
         layer.error = np.multiply(X, NLD)
 
-    def calculateDeltas(inputVec):
+    def calculateDeltas(self, inputVec):
+        print("Gradient Calculating")
         prevLayerActivation = inputVec
 
         #do some weird off-by-one thing, sorry
@@ -82,21 +96,40 @@ class Net:
             PROD = np.matmul(layer.error, np.transpose(prevLayerActivation))
             layer.gradientMatrix = np.add(layer.gradientMatrix, PROD)
             prevLayerActivation = layer.activation
-    
+
+    def clearGradientMatrices(self):
+        for layer in self.layers:
+            uwu = layer.gradientMatrix
+            for i in range(len(uwu)):
+                for j in range(len(uwu[0])):
+                    layer.gradientMatrix[i][j] = 0
 
     def gradientDescent():
+        print("Gradient Descending")
         for layer in self.layers:
             layer.gradientMatrix = np.multiply(layer.gradientMatrix, (float)(1/SET_SIZE))
             layer.weightMatrix = np.subtract(layer.weightMatrix, layer.gradientMatrix)
 
 
-    def runNetOneSet(Set):
+    def runNetOneSet(self,Set):
         for data in Set:
+            print("Forward Propagating")
             result = self.feedForwardAllLayers(data[1])
-            self.backPropagate(data[0], data[1])    
+            print("Back Propagating")
+            self.backPropagate(data[0], data[1])
+            print("Set Complete!")
+
+
+def sigmoid(x):
+    return 1/(1+ math.exp(-1 *x))
 
 #returns a matrix of values
 def getTrainingDataFromImage(imgName):
+
+    #TESTING ONLY
+    return [([1,2,3],[1,2,3,4,5,6,7,8,9]) for i in range(300)]
+
+
     #open image 
     img = Image.open(imgName)
     #turn image to grayscale
@@ -171,21 +204,31 @@ def getTrainingDataFromImage(imgName):
 
 def train():
     #create neural net
-    net = Net(4,4)
-    
+    print("Created neural net")
+    net = Net(6,4)
+    print("nn")
+
+    print(net.layers[1].weights)
     #get a matrix of training data
     trainingData = getTrainingDataFromImage('simpson.png')
     sets = divideTrainingDataIntoSets(trainingData)
 
+    print("aa")
+
+    print("Commence training")
     for Set in sets:
         net.runNetOneSet(Set)
 
 #returns an array
 def divideTrainingDataIntoSets(trainingData):
     #divide the training data into sets of 50
+
+    print("Dividing training data into sets")
+
     sets = []
     trainLen = len(trainingData)
-    while i < trainLen:
+    i = 0
+    while i < TEST_SIZE: #TODO: this will break if the number of data points is less than TEST_SIZE
         j = 0
         newSet = []
         while j < SET_SIZE:
