@@ -54,8 +54,10 @@ if __name__ == "__main__":
                                         [grayMatrix[j][i-1],grayMatrix[j][i],grayMatrix[j][i+1]],
                                         [grayMatrix[j+1][i-1],grayMatrix[j+1][i],grayMatrix[j+1][i+1]]])
                 actualRGB = np.array([R,G,B])
+
                 nn.input = inputMatrix
                 nn.y = actualRGB
+
                 nn.feedforward()
                 nn.backprop()
 
@@ -69,17 +71,18 @@ if __name__ == "__main__":
 
     finalSolution = np.random.rand(height,width,3)
     
-    for i in range(1, height-1): #each pixel's coordinates
+    for j in range(1, height-1): #each pixel's coordinates
 
-        for j in range(1, width-1):
+        for i in range(1, width-1):
 
-            inputMatrix = np.array([[grayMatrix[i-1][j-1],grayMatrix[i-1][j],grayMatrix[i-1][j+1]],
-                                    [grayMatrix[i][j-1],grayMatrix[i][j],grayMatrix[i][j+1]],
-                                    [grayMatrix[i+1][j-1],grayMatrix[i+1][j],grayMatrix[i+1][j+1]]])
+            inputMatrix = np.array([[grayMatrix[j-1][i-1],grayMatrix[j-1][i],grayMatrix[j-1][i+1]],
+                                        [grayMatrix[j][i-1],grayMatrix[j][i],grayMatrix[j][i+1]],
+                                        [grayMatrix[j+1][i-1],grayMatrix[j+1][i],grayMatrix[j+1][i+1]]])
             nn.feedforward()
-            finalSolution[i][j][0] = nn.output[0][0] #(r)
-            finalSolution[i][j][1] = nn.output[1][0] #(b)
-            finalSolution[i][j][2] = nn.output[2][0] #(g)
+
+            finalSolution[j][i][0] = nn.output[0][0] #(r)
+            finalSolution[j][i][1] = nn.output[1][0] #(b)
+            finalSolution[j][i][2] = nn.output[2][0] #(g)
             
     grey = Image.fromarray(finalSolution, mode="RGB")
     grey.save('output.png')
