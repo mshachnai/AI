@@ -1,13 +1,20 @@
 from PIL import Image
 import numpy as np
 import math 
+
+SET_SIZE = 50 #training batch size, i guess
+LAMBDA = 0 #minimize loss? 0 =danger of overfitting
 class Layer:
     def __init__(self, MRow, MCol):
 
         #matrix is size matRow, matCol
         #initialize all weights to 1 for now
         self.weights = [[1 for i in range(MCol)] for j in range(MRow)]
-        
+        self.activation = [0 for i in range(MRow)] #i think this is total output of node
+        self.error = [0 for i in range(MRow)]
+        self.deriv = [[1 for i in range(MCol)] for j in range(MRow)]
+        self.gradientMatrix = [[0 for i in range(MCol)] for j in range(MRow)]
+
     def forwardPropagate(Input):
         #calculate effect of weights on input
         weights_on_input= np.matmul(self.weights, Input)
@@ -40,18 +47,53 @@ class Net:
         lastLayer = Layer(3,20)
         self.layers.append(lastLayer)
 
-    def feedForwardAllLayers(vec):
+    def feedForwardAllLayers(vec): #in the beginning, vec is the input vector
         for layer in self.layers:
             vec = layer.forwardPropagate(vec) 
         return vec
 
-    def backPropagate():
-        pass
+    def backPropagate(actualVals, inputVec): #actualVals is the desired output vector
+        numLayers = len(self.layers) #number of trainable layers
+        calculateLastLayerLoss( numLayers -1, actualVals)
+        for i in range(numLayers -1):  #numlayers = 3 (for i in range(2)) -> [0,1]
+            calculateHiddenLayerLoss(numLayers-2-i) #3-2-0 = 1 3-2-1 = 0 OK
+
+        #now the loss (err) for all layers has been calculated. 
+        #calculate the gradients.
+        calculateDeltas(inputVec)
+
+    def calculateLastLayerLoss(layerNum, actualVals):
+        layer = self.layers[layerNum]
+        layer.error = np.subtract(layer.activation, actualVals)
+
+    def calculateHiddenLayerLoss(layerNum): #sets layer.error
+        layer = self.layers[layerNum]
+        nextLayer = self.layers[layerNum+1]
+        X = np.matmul(np.transpose(nextLayer.weights), nextLayer.error)
+        NLD = np.multiply(layer.activation, (1 - layer.activation))
+        layer.error = np.multiply(X, NLD)
+
+    def calculateDeltas(inputVec):
+        prevLayerActivation = inputVec
+
+        #do some weird off-by-one thing, sorry
+        for k in range(len(self.layers)):
+            layer = self.layers[k]
+            PROD = np.matmul(layer.error, np.transpose(prevLayerActivation))
+            layer.gradientMatrix = np.add(layer.gradientMatrix, PROD)
+            prevLayerActivation = layer.activation
+    
+
+    def gradientDescent():
+        for layer in self.layers:
+            layer.gradientMatrix = np.multiply(layer.gradientMatrix, (float)(1/SET_SIZE))
+            layer.weightMatrix = np.subtract(layer.weightMatrix, layer.gradientMatrix)
 
 
-    def runNetOneRound(vec):
-        result = self.feedForwardAllLayers(vec)
-        self.backPropagate()    
+    def runNetOneSet(Set):
+        for data in Set:
+            result = self.feedForwardAllLayers(vec)
+            self.backPropagate()    
 
 #returns a matrix of values
 def getTrainingDataFromImage(imgName):
