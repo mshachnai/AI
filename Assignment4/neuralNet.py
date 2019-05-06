@@ -63,18 +63,54 @@ class Net:
 
         firstLayer = None #set this later obviously
 
-        for i in range(self.row):
-            for j in range(self.col):
-                layers[len(layers) -1].derivs[i][j] = derivFirstlayer(i,j, res, actual)
+        #do gradient descent on 1st layer
+        gradientFirstLayer(res, actual)
 
-    def derivFirstLayer(i,j, res, actual): #i sort of refers to output node, j to input.
-        lastLayerNum = len(self.layers)
+        """
+                for i in range(self.row):
+                    for j in range(self.col):
+                     layers[len(layers) -1].derivs[i][j] = gradientFirstlayer(i,j, res, actual)
+        """
+    def gradientFirstLayer(res, actual): #i sort of refers to output node, j to input.
+        layerNum = len(self.layers) -1
+
+        firstLayer = self.layers[layerNum]
+        prevLayer = self.layers[layerNum-1] 
+
+        for i in range(len(firstLayer.derivs)):
+            for j in range(len(firstLayer.derivs[0])):
+                dL_dO = dLoss_dOut(res, actual)
+                dO_dI = dSigmaFn(firstLayer.pre_sigmoid_output[i])
+                dI_dW = prevLayer.post_sigmoid_output[j]
         
-        dL_dO = dLoss_dOut(res, actual)
-        dO_dI = dSigmaFn(layers[lastLayerNum -1].pre_sigmoid_output[i])
-        dI_dW = layers[lastLayerNum-2].post_sigmoid_output[j]
-        
-        return dL_dO * dO_dI * dI_dW
+                firstLayer.derivs[i][j] = dL_dO * dO_dI * dI_dW
+
+    def gradientOtherLayers(): 
+        num = len(self.layers) -1 #the number of other layers to deal with
+
+        for i in range(num-1): #compute layer i...counting backwards
+            layerNum = num -2 -i
+            gradientOneLayerWithSum(layerNum)
+
+        #first layer is a bit weird, the dI_dW computation is just the input value. TODO
+
+    def gradientOneLayerWithSum(layerNum):
+        layer = layers[layerNum]
+        prevLayer = layers[layerNum-1]
+        nextLayer = layers[layerNum+1]
+
+        for i in range(len(layer.derivs)):
+            for j in range(len(layer.derivs[0])):
+                #calculate w_{ij}
+                
+                #for the weight we're working on, we need to know which output node (which row: <i> ).
+                #and get all of the derivatives that originate from that node (hold the <j> value const)
+                sums = 0
+                for k in range(len(nextLayer.derivs)):
+                    sums += nextLayer.derivs[k][i] * 
+                
+                #get prev layer's output
+                dI_dW = prevLayer.post_sigmoid_output[j]
 
     def dLoss_dOut(res, actual):
         ret = []
