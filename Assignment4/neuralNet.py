@@ -67,7 +67,7 @@ if __name__ == "__main__":
     width = photo.size[0]
     height = photo.size[1]
 
-    finalSolution = np.array([[[0 for z in range(3)] for x in range(width)] for y in range(height)])
+    finalSolution = np.random.rand(height,width,3)
     
     for i in range(1, height-1): #each pixel's coordinates
 
@@ -77,11 +77,12 @@ if __name__ == "__main__":
                                     [grayMatrix[i][j-1],grayMatrix[i][j],grayMatrix[i][j+1]],
                                     [grayMatrix[i+1][j-1],grayMatrix[i+1][j],grayMatrix[i+1][j+1]]])
             nn.feedforward()
-            finalSolution[i][j][0] = nn.output[0][0]
-            finalSolution[i][j][1] = nn.output[1][0]
-            finalSolution[i][j][2] = nn.output[2][0]
+            finalSolution[i][j][0] = nn.output[0][0] #(r)
+            finalSolution[i][j][1] = nn.output[1][0] #(b)
+            finalSolution[i][j][2] = nn.output[2][0] #(g)
             
 
+    print(finalSolution)
     grey = Image.fromarray(finalSolution, mode="RGB")
     grey.save('output.png')
     grey.show()
