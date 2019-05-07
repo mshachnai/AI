@@ -3,15 +3,18 @@ from PIL import Image
 import numpy as np
 import math 
 
-TEST_SIZE = 200 #test NN on smaller pic before we commit to a 1000 pixel monstrosity
-SET_SIZE = 5 #training batch size, i guess
+SET_SIZE = 1 #training batch size, i guess
 LAMBDA = 0 #minimize loss? 0 =danger of overfitting
+ALPHA = 0.01 #learning rate?
+
+FILE = open("weights", "w+")
+
 class Layer:
     def __init__(self, MRow, MCol):
 
         #matrix is size matRow, matCol
         #initialize all weights to 1 for now. TODO: random weights?
-        self.weights = [[0.5 for i in range(MCol)] for j in range(MRow)]
+        self.weights = [[(np.random.randint(low=-100, high=100)/100.0) for i in range(MCol)] for j in range(MRow)]
         self.activation = [0 for i in range(MRow)] #i think this is total output of node
         self.error = [0 for i in range(MRow)]
         self.deriv = [[1 for i in range(MCol)] for j in range(MRow)]
@@ -46,6 +49,16 @@ class Net:
         #we need 3 output nodes for R,G,B 
         lastLayer = Layer(3,hiddenWidth)
         self.layers.append(lastLayer)
+
+    def train(self, imgName): #TODO:make this a training set
+
+        #get a matrix of training data
+        trainingData = getTrainingDataFromImage(imgName)
+        sets = divideTrainingDataIntoSets(trainingData)
+        print("Commence training")
+        for Set in sets:
+            self.runNetOneSet(Set)
+
 
     def feedForwardAllLayers(self, vec): #in the beginning, vec is the input vector
         for i in range(len(self.layers)):
@@ -147,18 +160,31 @@ class Net:
 
     def gradientDescent(self):
         print("Gradient Descending")
-        for layer in self.layers:
+        for aaa in range(len(self.layers)):
+            layer = self.layers[aaa]
             layer.gradientMatrix = np.multiply(layer.gradientMatrix, (float)(1/SET_SIZE))
-            layer.weights = np.subtract(layer.weights, layer.gradientMatrix)
+            layer.weights = np.subtract(layer.weights, np.multiply(layer.gradientMatrix, ALPHA))
             
-            """ 
+            print("weights:")
+            #printM(layer.weights)
+            if aaa == len(self.layers) -1:
+                for X in layer.weights:
+                    for Y in X:
+                        FILE.write((str(Y))[0:10] + "\t")
+                    FILE.write("\n")
+
+                FILE.write("------------------------------------------\n")
+                FILE.write("------------------------------------------\n")
+
             print("gradientMatrix: ")
-            printM(layer.gradientMatrix)
-            input()
-            """
+            #printM(layer.gradientMatrix)
+            #input()
+            
 
     def runNetOneSet(self,Set):
+        #print(Set)
         for data in Set:
+            #print(data)
             print("Forward Propagating")
             result = self.feedForwardAllLayers(data[1])
             print("Back Propagating")
@@ -166,9 +192,85 @@ class Net:
             print("Set Complete!")
         
         self.gradientDescent()
+        
         print("In runNetOneSet: Total Error: ")
         print((self.layers[len(self.layers)-1]).error)
-        input()
+        print(sum(self.layers[len(self.layers)-1].error))
+        #input()
+
+
+    def predict(self, imgName):
+        img = Image.open(imgName)
+        imgGrey = img.convert('L')
+
+        greyMatrix = np.array(imgGrey)
+
+        (row,col) = greyMatrix.shape
+
+        #convert greyMatrix into a list of training data
+        testData = [[0 for i in range(col-1)] for j in range(row-1)]
+        for i in range(1,row-1):
+            for j in range(1,col-1):
+                greyVals = [greyMatrix[i-1][j-1],
+                                greyMatrix[i-1][j],
+                                greyMatrix[i-1][j+1],
+                                greyMatrix[i][j+1],
+                                greyMatrix[i+1][j+1],
+                                greyMatrix[i+1][j],
+                                greyMatrix[i+1][j-1],
+                                greyMatrix[i][j-1],
+                                greyMatrix[i][j]]
+                greyVals = np.transpose(greyVals) 
+                testData[i][j] = greyVals
+
+        redMatrix = [[0 for i in range(col-1)] for j in range(row-1)]
+        greenMatrix = [[0 for i in range(col-1)] for j in range(row-1)]
+        blueMatrix = [[0 for i in range(col-1)] for j in range(row-1)]
+
+        for i in range(1, row-1):
+            for j in range(1, col-1):
+                #normalize testData
+                norm = list(map(divide256,testData[i][j]))
+                output = list(map(multiply256, self.feedForwardAllLayers(norm)))
+                redMatrix[i][j] = output[0]
+                greenMatrix[i][j] = output[1]
+                blueMatrix[i][j] = output[2]
+        
+        colorData = [redMatrix, greenMatrix, blueMatrix]
+
+        color = Image.fromarray(np.array(colorData), mode="RGB")
+        color.save('output.png')
+        color.show()
+
+        """
+
+
+
+to = Image.open('2.jpg')
+    grayVersion = photo.convert('L')
+    grayMatrix = np.array(grayVersion)
+
+    width = photo.size[0] #define W and H
+    height = photo.size[1]
+
+    finalSolution = [[[0,0,0] for x in range(width)] for y in range(height)]
+
+
+    for i in range(1, height-1): #each pixel's coordinates
+        row = ""
+        for j in range(1, width-1):
+
+            inputMatrix = np.array([[grayMatrix[i-1][j-1],grayMatrix[i-1][j],grayMatrix[i-1][j+1]],
+                                    [grayMatrix[i][j-1],grayMatrix[i][j],grayMatrix[i][j+1]],
+                                    [grayMatrix[i+1][j-1],grayMatrix[i+1][j],grayMatrix[i+1][j+1]]])
+            nn.feedforward()
+            finalSolution[i][j] = nn.output
+
+    print(finalSolution)
+    grey = Image.fromarray(finalSolution)
+    grey.save('output.png')
+    grey.show()
+
 
 
 def sigmoid(x):
@@ -178,10 +280,10 @@ def sigmoid(x):
 def getTrainingDataFromImage(imgName):
 
     #TESTING ONLY
-    return [([1,2,3],[1,2,3,4,5,6,7,8,9]) for i in range(300)]
+    #return [([1,2,3],[1,2,3,4,5,6,7,8,9]) for i in range(300)]
 
 
-    #open image 
+    #open iaaa11mage 
     img = Image.open(imgName)
     #turn image to grayscale
     grey = img.convert('L')
@@ -217,9 +319,10 @@ def getTrainingDataFromImage(imgName):
 
     TODO: since this probably won't predict very well, maybe increase window size
     """
-    trainingData = [[0 for i in range(col-1)] for j in range(row-1)]
+    trainingData = [[0 for i in range(col-2)] for j in range(row-2)]
     for i in range(1,row-1):
         for j in range(1,col-1):
+
             colorVal = colorMatrix[i][j]
             greyVals = [greyMatrix[i-1][j-1],
                             greyMatrix[i-1][j],
@@ -231,7 +334,7 @@ def getTrainingDataFromImage(imgName):
                             greyMatrix[i][j-1],
                             greyMatrix[i][j]]
             greyVals = np.transpose(greyVals) 
-            trainingData[i][j] = (colorVal, greyVals)
+            trainingData[i-1][j-1] = [colorVal, greyVals]
 
     """
     #test if the previous logic works
@@ -253,20 +356,6 @@ def getTrainingDataFromImage(imgName):
     """
     return trainingData
 
-def train():
-    #create neural net
-    print("Created neural net")
-    net = Net(6,2)
-
-    #get a matrix of training data
-    trainingData = getTrainingDataFromImage('simpson.png')
-    sets = divideTrainingDataIntoSets(trainingData)
-
-    print("aa")
-
-    print("Commence training")
-    for Set in sets:
-        net.runNetOneSet(Set)
 
 #returns an array
 def divideTrainingDataIntoSets(trainingData):
@@ -274,17 +363,23 @@ def divideTrainingDataIntoSets(trainingData):
 
     print("Dividing training data into sets")
 
+    flatListTrain = [item for sublist in trainingData for item in sublist]
+
     sets = []
-    trainLen = len(trainingData)
+    trainLen = len(flatListTrain)
     i = 0
-    while i < TEST_SIZE: #TODO: this will break if the number of data points is less than TEST_SIZE
+    while i < trainLen: 
         j = 0
         newSet = []
         while j < SET_SIZE:
             if i >= trainLen:
                 break
 
-            newSet.append(trainingData[i])
+            #do the normalization here
+            flatListTrain[i][0] = list(map(divide256,flatListTrain[i][0]))
+            flatListTrain[i][1] = list(map(divide256,flatListTrain[i][1]))
+
+            newSet.append(flatListTrain[i])
             j+=1
             i+=1
         sets.append(newSet)
@@ -292,10 +387,18 @@ def divideTrainingDataIntoSets(trainingData):
     return sets
 
        
+def divide256(x):
+    return x/256.0
 
+def multiply256(x):
+    return x * 256.0
 
 if __name__ == "__main__":
-    train()
+    net = Net(9,3)
+    net.train('mini_pink.PNG')
+    #net.train('pink.PNG')
+    #input()
+    net.predict('mini_pink.PNG')
 
 
-            
+
